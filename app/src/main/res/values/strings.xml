@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">CitadelApi</string>
+    <string-array name="envs">
+        <item>sandbox</item>
+        <item>dev</item>
+        <item>prod</item>
+    </string-array>
+
+    <string-array name="envLabels">
+        <item>Sandbox</item>
+        <item>Development</item>
+        <item>Production</item>
+    </string-array>
+
+    <string-array name="products">
+        <item>employment</item>
+        <item>income</item>
+    </string-array>
+
+    <string-array name="productLabels">
+        <item>Employment</item>
+        <item>Income</item>
+    </string-array>
+</resources>
