@@ -5,80 +5,80 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
-import androidx.core.widget.doOnTextChanged
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.citadelapi.product.MainViewModel
-import com.google.android.material.textfield.TextInputEditText
+import com.citadelapi.ui.Environment
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-class SettingsFragment : Fragment(), AdapterView.OnItemSelectedListener  {
+@ExperimentalCoroutinesApi
+class SettingsFragment : Fragment() {
     private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val rootView = inflater.inflate(R.layout.fragment_settings, container, false)
-
+    ): View {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
-        val envs: Spinner = rootView.findViewById(R.id.env)
-        ArrayAdapter.createFromResource(
-            rootView.context,
-            R.array.envLabels,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            envs.adapter = adapter
+        return ComposeView(requireContext()).apply {
+            setContent {
+                SettingsPage(
+                    viewModel = viewModel
+                )
+            }
         }
-
-        envs.onItemSelectedListener = this
-
-        val clientId = rootView.findViewById<TextInputEditText>(R.id.client_id)
-        clientId.doOnTextChanged { text, start, before, count ->
-            viewModel.changeClientId(text.toString())
-        }
-        clientId.setText(viewModel.settingsUIState.value.clientId)
-
-        val sandboxKey = rootView.findViewById<TextInputEditText>(R.id.sandbox)
-        sandboxKey.doOnTextChanged { text, start, before, count ->
-            viewModel.changeSandboxKey(text.toString())
-        }
-        sandboxKey.setText(viewModel.settingsUIState.value.sandbox)
-
-        val devKey = rootView.findViewById<TextInputEditText>(R.id.dev)
-        devKey.doOnTextChanged { text, start, before, count ->
-            viewModel.changeDevKey(text.toString())
-        }
-        devKey.setText(viewModel.settingsUIState.value.dev)
-
-        val prodKey = rootView.findViewById<TextInputEditText>(R.id.prod)
-        prodKey.doOnTextChanged { text, start, before, count ->
-            viewModel.changeProdKey(text.toString())
-        }
-        prodKey.setText(viewModel.settingsUIState.value.prod)
-
-        envs.setSelection(when (viewModel.settingsUIState.value.env) {
-            "dev" -> 1;
-            "prod" -> 2;
-            else -> 0;
-        })
-
-        return rootView
     }
+}
 
-    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-        when (p2) {
-            0 ->  viewModel.changeEnv("sandbox")
-            1 ->  viewModel.changeEnv("dev")
-            2 ->  viewModel.changeEnv("prod")
-        }
-
-    }
-
-    override fun onNothingSelected(p0: AdapterView<*>?) {
-        TODO("Not yet implemented")
+@ExperimentalCoroutinesApi
+@Composable
+fun SettingsPage(
+    viewModel: MainViewModel
+) {
+    val state = viewModel.settingsUIState.collectAsState()
+    Column(Modifier.padding(horizontal = 20.dp)) {
+        Text(text = "Settings")
+        Environment(
+            env = state.value.env,
+            onEnvChange = { viewModel.changeEnv(it) }
+        )
+        OutlinedTextField(
+            value = state.value.clientId,
+            onValueChange = { viewModel.changeClientId(it) },
+            label = { Text("Client Id") },
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = state.value.sandbox,
+            onValueChange = { viewModel.changeSandboxKey(it) },
+            label = { Text("Sandbox") },
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = state.value.dev,
+            onValueChange = { viewModel.changeDevKey(it) },
+            label = { Text("Development") },
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = state.value.prod,
+            onValueChange = { viewModel.changeProdKey(it) },
+            label = { Text("Production") },
+            modifier = Modifier
+                .fillMaxWidth()
+        )
     }
 }

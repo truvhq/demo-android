@@ -5,12 +5,19 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.*
 import com.citadelapi.product.MainViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
+import com.citadelapi.ui.Title
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 
 
 @ExperimentalCoroutinesApi
@@ -20,18 +27,23 @@ class ConsoleFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_console, container, false)
-        val console = view.findViewById<TextView>(R.id.console)
-
+    ): View {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.consoleState.collect {
-                console.text = it
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val state = viewModel.consoleState.collectAsState()
+                val scrollState = rememberScrollState()
+
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .verticalScroll(scrollState)
+                ) {
+                    Title("Console")
+                    Text(state.value, lineHeight = 30.sp)
+                }
             }
         }
-
-        return view
     }
 }

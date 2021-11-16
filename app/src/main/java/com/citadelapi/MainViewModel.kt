@@ -24,11 +24,31 @@ data class BridgeTokenResponse(
     }
 }
 
-sealed class ProductUIState {
-    object BridgeTokenLoading : ProductUIState()
+data class BridgeTokenRequest(
+    @SerializedName("product_type")
+    var productType: String,
+    @SerializedName("company_mapping_id")
+    var companyMapping: String?,
+    @SerializedName("provider_id")
+    var provider: String?,
+) {}
 
-    data class BridgeTokenLoaded(val bridgeToken: String) : ProductUIState()
-    object BridgeTokenError : ProductUIState()
+sealed class BridgeTokenState() {
+    object BridgeTokenLoading : BridgeTokenState()
+    data class BridgeTokenLoaded(val bridgeToken: String) : BridgeTokenState()
+    object BridgeTokenError : BridgeTokenState()
+}
+
+data class ProductUIState(
+    val productType: String = "income",
+    val widgetVisible: Boolean = false,
+    val companyMapping: String = "",
+    val provider: String = "",
+    val routingNumber: String = "123456789",
+    val accountNumber: String = "160026001",
+    val bankName: String = "TD Bank",
+    val accountType: String = "checking"
+) {
 }
 
 data class SettingsUIState(
@@ -44,9 +64,40 @@ data class SettingsUIState(
 @ExperimentalCoroutinesApi
 class MainViewModel : ViewModel() {
     private lateinit var preferences: SharedPreferences
-    private val _productUIState =
-        MutableStateFlow<ProductUIState>(ProductUIState.BridgeTokenLoading)
+    private val _bridgeTokenState =
+        MutableStateFlow<BridgeTokenState>(BridgeTokenState.BridgeTokenLoading)
+    val bridgeTokenState: StateFlow<BridgeTokenState> = _bridgeTokenState
+
+    private val _productUIState = MutableStateFlow<ProductUIState>(ProductUIState())
     val productUIState: StateFlow<ProductUIState> = _productUIState
+
+    fun changeProduct(productType: String) = viewModelScope.launch {
+        _productUIState.value = productUIState.value.copy(productType = productType)
+
+        fetchBridgeToken();
+    }
+
+    fun showWidget() = viewModelScope.launch {
+        _productUIState.value = productUIState.value.copy(widgetVisible = true)
+        log("Opening widget with bridge token ${bridgeTokenState.value}")
+    }
+
+    fun hideWidget() = viewModelScope.launch {
+        _productUIState.value = productUIState.value.copy(widgetVisible = false)
+        log("Closing widget")
+    }
+
+    fun changeCompanyMapping(mapping: String) = viewModelScope.launch {
+        _productUIState.value = productUIState.value.copy(companyMapping = mapping)
+
+        fetchBridgeToken()
+    }
+
+    fun changeProvider(provider: String) = viewModelScope.launch {
+        _productUIState.value = productUIState.value.copy(provider = provider)
+
+        fetchBridgeToken()
+    }
 
     private val _consoleState = MutableStateFlow<String>("")
     val consoleState: StateFlow<String> = _consoleState
@@ -72,11 +123,14 @@ class MainViewModel : ViewModel() {
                 prod = productionKey!!,
                 clientId = clientId!!,
             )
+
+        fetchBridgeToken()
     }
 
     private val _settingsUIState =
         MutableStateFlow(SettingsUIState())
     val settingsUIState: StateFlow<SettingsUIState> = _settingsUIState
+
 
     fun changeEnv(env: String) = viewModelScope.launch {
         _settingsUIState.value = settingsUIState.value.copy(env = env)
@@ -123,7 +177,17 @@ class MainViewModel : ViewModel() {
         val devKey = settingsUIState.value.dev
         val prodKey = settingsUIState.value.prod
 
-        _productUIState.value = ProductUIState.BridgeTokenLoading
+        _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
+        val gson = Gson()
+        val body = gson.toJson(
+            BridgeTokenRequest(
+                productUIState.value.productType,
+                if (productUIState.value.companyMapping == "") null else productUIState.value.companyMapping,
+                if (productUIState.value.provider == "") null else productUIState.value.provider,
+            )
+        )
+
+        log("Fetching bridge token with data: $body")
 
         "https://prod.citadelid.com/v1/bridge-tokens/"
             .httpPost()
@@ -138,13 +202,15 @@ class MainViewModel : ViewModel() {
                     }
                 )
             )
-            .body("""{"product_type": "income"}""")
-            .responseObject<BridgeTokenResponse> { request, response, result ->
+            .body(body)
+            .responseObject<BridgeTokenResponse> { _, _, result ->
                 val bridgeToken = result.component1()?.bridgeToken
                 if (bridgeToken != null) {
-                    _productUIState.value = ProductUIState.BridgeTokenLoaded(bridgeToken)
+                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(bridgeToken)
+                    log("Fetched bridge token ${bridgeToken}")
                 } else {
-                    _productUIState.value = ProductUIState.BridgeTokenError
+                    log("Bridge token error ${result.component2()?.message}")
+                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
                 }
             }
     }

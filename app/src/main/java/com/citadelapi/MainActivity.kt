@@ -8,6 +8,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.citadelapi.product.MainViewModel
 import com.google.android.material.tabs.TabLayout
 
+@kotlinx.coroutines.ExperimentalCoroutinesApi
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
