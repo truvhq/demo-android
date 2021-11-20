@@ -27,9 +27,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.viewinterop.AndroidView
 import com.citadelapi.product.BridgeTokenState
 import com.citadelapi.product.MainViewModel
-import com.citadelapi.ui.AdditionalSettings
-import com.citadelapi.ui.Product
-import com.citadelapi.ui.Title
+import com.citadelapi.ui.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.json.JSONObject
 
@@ -125,9 +123,16 @@ class ProductFragment : Fragment() {
                         ) {
                             Column {
                                 Title("Product")
-                                Product(
-                                    product = productState.value.productType,
-                                    onChange = { viewModel.changeProduct(it) }
+                                Dropdown(
+                                    value = productState.value.productType,
+                                    onChange = { viewModel.changeProduct(it) },
+                                    options = arrayOf(
+                                        DropdownData("income", "Income"),
+                                        DropdownData("employment", "Employment"),
+                                        DropdownData("deposit_switch", "Direct Deposit Switch"),
+                                        DropdownData("pll", "Paycheck Linked Loan"),
+                                    ),
+                                    label = "Product"
                                 )
                                 AdditionalSettings(viewModel = viewModel)
                             }

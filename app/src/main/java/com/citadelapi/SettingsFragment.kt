@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.citadelapi.product.MainViewModel
-import com.citadelapi.ui.Environment
+import com.citadelapi.ui.Dropdown
+import com.citadelapi.ui.DropdownData
+import com.citadelapi.ui.Title
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
@@ -47,10 +49,16 @@ fun SettingsPage(
 ) {
     val state = viewModel.settingsUIState.collectAsState()
     Column(Modifier.padding(horizontal = 20.dp)) {
-        Text(text = "Settings")
-        Environment(
-            env = state.value.env,
-            onEnvChange = { viewModel.changeEnv(it) }
+        Title("Settings")
+        Dropdown(
+            value = state.value.env,
+            onChange = { viewModel.changeEnv(it) },
+            options = arrayOf(
+                DropdownData("sandbox", "Sandbox"),
+                DropdownData("dev", "Development"),
+                DropdownData("prod", "Production"),
+            ),
+            label = "Environment"
         )
         OutlinedTextField(
             value = state.value.clientId,

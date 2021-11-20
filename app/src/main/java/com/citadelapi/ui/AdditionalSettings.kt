@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.citadelapi.product.MainViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -30,7 +30,7 @@ fun AdditionalSettings(viewModel: MainViewModel) {
             modifier = Modifier
                 .clickable { expanded = !expanded }
                 .fillMaxWidth()
-                .padding(Dp(8F))
+                .padding(8.dp)
         ) {
             Text(text = "Show additional settings")
             Icon(icon, "")
@@ -49,11 +49,53 @@ fun AdditionalSettings(viewModel: MainViewModel) {
                 onValueChange = { viewModel.changeProvider(it) },
                 modifier = Modifier.fillMaxWidth()
             )
-            if (state.value.productType == "deposit_switch") {
+            if (setOf("deposit_switch", "pll").contains(state.value.productType)) {
                 OutlinedTextField(
                     label = { Text(text = "Routing number") },
-                    value = state.value.routingNumber,
-                    onValueChange = {},
+                    value = state.value.accountState.routingNumber,
+                    onValueChange = {
+                        viewModel.changeAccountState(
+                            state.value.accountState.copy(
+                                routingNumber = it
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    label = { Text(text = "Account number") },
+                    value = state.value.accountState.accountNumber,
+                    onValueChange = {
+                        viewModel.changeAccountState(
+                            state.value.accountState.copy(
+                                accountNumber = it
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    label = { Text(text = "Bank name") },
+                    value = state.value.accountState.bankName,
+                    onValueChange = {
+                        viewModel.changeAccountState(
+                            state.value.accountState.copy(
+                                bankName = it
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    label = { Text(text = "Account type") },
+                    value = state.value.accountState.accountType,
+                    onValueChange = {
+                        viewModel.changeAccountState(
+                            state.value.accountState.copy(
+                                accountType = it
+                            )
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
             }

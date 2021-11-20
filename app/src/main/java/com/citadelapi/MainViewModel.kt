@@ -14,23 +14,36 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class BridgeTokenResponse(
-    @SerializedName("bridge_token")
-    var bridgeToken: String,
+        @SerializedName("bridge_token")
+        var bridgeToken: String,
 ) {
 
     class Deserializer : ResponseDeserializable<BridgeTokenResponse> {
         override fun deserialize(content: String): BridgeTokenResponse =
-            Gson().fromJson(content, BridgeTokenResponse::class.java)
+                Gson().fromJson(content, BridgeTokenResponse::class.java)
     }
 }
 
+data class AccountState(
+        @SerializedName("account_number")
+        var accountNumber: String = "160026001",
+        @SerializedName("routing_number")
+        val routingNumber: String = "123456789",
+        @SerializedName("bank_name")
+        val bankName: String = "TD Bank",
+        @SerializedName("account_type")
+        val accountType: String = "checking"
+) {}
+
 data class BridgeTokenRequest(
-    @SerializedName("product_type")
-    var productType: String,
-    @SerializedName("company_mapping_id")
-    var companyMapping: String?,
-    @SerializedName("provider_id")
-    var provider: String?,
+        @SerializedName("product_type")
+        var productType: String,
+        @SerializedName("company_mapping_id")
+        var companyMapping: String?,
+        @SerializedName("provider_id")
+        var provider: String?,
+        @SerializedName("account")
+        var account: AccountState?,
 ) {}
 
 sealed class BridgeTokenState() {
@@ -40,23 +53,20 @@ sealed class BridgeTokenState() {
 }
 
 data class ProductUIState(
-    val productType: String = "income",
-    val widgetVisible: Boolean = false,
-    val companyMapping: String = "",
-    val provider: String = "",
-    val routingNumber: String = "123456789",
-    val accountNumber: String = "160026001",
-    val bankName: String = "TD Bank",
-    val accountType: String = "checking"
+        val productType: String = "income",
+        val widgetVisible: Boolean = false,
+        val companyMapping: String = "",
+        val provider: String = "",
+        val accountState: AccountState = AccountState(),
 ) {
 }
 
 data class SettingsUIState(
-    val env: String = "",
-    val clientId: String = "",
-    val dev: String = "",
-    val sandbox: String = "",
-    val prod: String = ""
+        val env: String = "",
+        val clientId: String = "",
+        val dev: String = "",
+        val sandbox: String = "",
+        val prod: String = ""
 ) {
 
 }
@@ -65,7 +75,7 @@ data class SettingsUIState(
 class MainViewModel : ViewModel() {
     private lateinit var preferences: SharedPreferences
     private val _bridgeTokenState =
-        MutableStateFlow<BridgeTokenState>(BridgeTokenState.BridgeTokenLoading)
+            MutableStateFlow<BridgeTokenState>(BridgeTokenState.BridgeTokenLoading)
     val bridgeTokenState: StateFlow<BridgeTokenState> = _bridgeTokenState
 
     private val _productUIState = MutableStateFlow<ProductUIState>(ProductUIState())
@@ -99,6 +109,12 @@ class MainViewModel : ViewModel() {
         fetchBridgeToken()
     }
 
+    fun changeAccountState(accountState: AccountState) = viewModelScope.launch {
+        _productUIState.value = productUIState.value.copy(accountState = accountState)
+
+        fetchBridgeToken()
+    }
+
     private val _consoleState = MutableStateFlow<String>("")
     val consoleState: StateFlow<String> = _consoleState
 
@@ -116,19 +132,19 @@ class MainViewModel : ViewModel() {
         val clientId = preferences.getString("client_id", "")
 
         _settingsUIState.value =
-            settingsUIState.value.copy(
-                env = env!!,
-                sandbox = sandboxKey!!,
-                dev = developmentKey!!,
-                prod = productionKey!!,
-                clientId = clientId!!,
-            )
+                settingsUIState.value.copy(
+                        env = env!!,
+                        sandbox = sandboxKey!!,
+                        dev = developmentKey!!,
+                        prod = productionKey!!,
+                        clientId = clientId!!,
+                )
 
         fetchBridgeToken()
     }
 
     private val _settingsUIState =
-        MutableStateFlow(SettingsUIState())
+            MutableStateFlow(SettingsUIState())
     val settingsUIState: StateFlow<SettingsUIState> = _settingsUIState
 
 
@@ -178,40 +194,42 @@ class MainViewModel : ViewModel() {
         val prodKey = settingsUIState.value.prod
 
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
+        val state = productUIState.value
         val gson = Gson()
         val body = gson.toJson(
-            BridgeTokenRequest(
-                productUIState.value.productType,
-                if (productUIState.value.companyMapping == "") null else productUIState.value.companyMapping,
-                if (productUIState.value.provider == "") null else productUIState.value.provider,
-            )
+                BridgeTokenRequest(
+                        productUIState.value.productType,
+                        state.companyMapping ?: "",
+                        state.provider ?: "",
+                        if (state.productType === "deposit_switch" || state.productType === "pll") null else state.accountState
+                )
         )
 
         log("Fetching bridge token with data: $body")
 
         "https://prod.citadelid.com/v1/bridge-tokens/"
-            .httpPost()
-            .header(
-                mapOf(
-                    "Content-Type" to "application/json",
-                    "X-Access-Client-Id" to clientId,
-                    "X-Access-Secret" to when (env) {
-                        "dev" -> devKey
-                        "prod" -> prodKey
-                        else -> sandboxKey
-                    }
+                .httpPost()
+                .header(
+                        mapOf(
+                                "Content-Type" to "application/json",
+                                "X-Access-Client-Id" to clientId,
+                                "X-Access-Secret" to when (env) {
+                                    "dev" -> devKey
+                                    "prod" -> prodKey
+                                    else -> sandboxKey
+                                }
+                        )
                 )
-            )
-            .body(body)
-            .responseObject<BridgeTokenResponse> { _, _, result ->
-                val bridgeToken = result.component1()?.bridgeToken
-                if (bridgeToken != null) {
-                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(bridgeToken)
-                    log("Fetched bridge token ${bridgeToken}")
-                } else {
-                    log("Bridge token error ${result.component2()?.message}")
-                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
+                .body(body)
+                .responseObject<BridgeTokenResponse> { _, _, result ->
+                    val bridgeToken = result.component1()?.bridgeToken
+                    if (bridgeToken != null) {
+                        _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(bridgeToken)
+                        log("Fetched bridge token ${bridgeToken}")
+                    } else {
+                        log("Bridge token error ${result.component2()?.message}")
+                        _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
+                    }
                 }
-            }
     }
 }
