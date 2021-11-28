@@ -81,7 +81,6 @@ class ProductFragment : Fragment() {
     }
 
 
-    @ExperimentalUnitApi
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

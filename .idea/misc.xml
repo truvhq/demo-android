@@ -6,9 +6,12 @@
         <entry key="../../../../layout/custom_preview.xml" value="0.3104166666666667" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.31145833333333334" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.21621317951511038" />
+        <entry key="app/src/main/res/layout/activity_splash_screen.xml" value="0.20677083333333332" />
         <entry key="app/src/main/res/layout/fragment_console.xml" value="0.13697916666666668" />
         <entry key="app/src/main/res/layout/fragment_product.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.375" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.18385416666666668" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.18385416666666668" />
       </map>
     </option>
   </component>
