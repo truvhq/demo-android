@@ -33,11 +33,11 @@ class ConsoleFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val state = viewModel.consoleState.collectAsState()
-                val scrollState = rememberScrollState()
+                val scrollState = rememberScrollState(Int.MAX_VALUE)
 
                 Column(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(horizontal = 16.dp)
                         .verticalScroll(scrollState)
                 ) {
                     Title("Console")

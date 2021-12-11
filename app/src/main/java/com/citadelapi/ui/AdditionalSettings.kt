@@ -49,8 +49,8 @@ fun AdditionalSettings(viewModel: MainViewModel) {
         if (expanded) {
             OutlinedTextField(
                 label = { Text(text = "Company Mapping ID") },
-                value = state.value.companyMapping,
-                onValueChange = { viewModel.changeCompanyMapping(it) },
+                value = state.value.companyMapping ?: "",
+                onValueChange = { viewModel.changeCompanyMapping(if (it == "") null else it) },
                 modifier = Modifier.fillMaxWidth()
             )
             Column(Modifier.padding(16.dp)) {
@@ -79,8 +79,8 @@ fun AdditionalSettings(viewModel: MainViewModel) {
             }
             OutlinedTextField(
                 label = { Text(text = "Provider ID") },
-                value = state.value.provider,
-                onValueChange = { viewModel.changeProvider(it) },
+                value = state.value.provider ?: "",
+                onValueChange = { viewModel.changeProvider(if (it == "") null else it) },
                 modifier = Modifier.fillMaxWidth()
             )
             Column(Modifier.padding(16.dp)) {

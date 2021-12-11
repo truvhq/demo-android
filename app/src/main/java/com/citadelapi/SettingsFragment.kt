@@ -8,12 +8,14 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.citadelapi.product.MainViewModel
@@ -34,9 +36,13 @@ class SettingsFragment : Fragment() {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                SettingsPage(
-                    viewModel = viewModel
-                )
+                MaterialTheme(
+                    colors = MaterialTheme.colors.copy(primary = Color(0xFF0DAB4C))
+                ) {
+                    SettingsPage(
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
@@ -63,7 +69,7 @@ fun SettingsPage(
         OutlinedTextField(
             value = state.value.clientId,
             onValueChange = { viewModel.changeClientId(it) },
-            label = { Text("Client Id") },
+            label = { Text("Client ID") },
             modifier = Modifier
                 .fillMaxWidth()
         )

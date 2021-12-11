@@ -1,6 +1,7 @@
 package com.citadelapi
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -85,37 +86,47 @@ class ProductFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+        val alert = AlertDialog.Builder(context)
+        alert.setTitle("Can’t open Citadel Bridge")
+        alert.setMessage("Add a key or change the environment in the settings to run Citadel Bridge.")
+        alert.setNeutralButton("Open settings") { dialog, _ ->
+            viewModel.setTab(2)
+        }
+
+        var cachedWebview: WebView? = null;
 
         return ComposeView(requireContext()).apply {
             setContent {
-                val productState = viewModel.productUIState.collectAsState()
-                val bridgeTokenState = viewModel.bridgeTokenState.collectAsState()
+                MaterialTheme(
+                    colors = MaterialTheme.colors.copy(primary = Color(0xFF0DAB4C))
+                ) {
+                    val productState = viewModel.productUIState.collectAsState()
+                    val bridgeTokenState = viewModel.bridgeTokenState.collectAsState()
 
-                if (productState.value.widgetVisible) {
-                    AndroidView(factory = {
-                        WebView(it).apply {
-                            settings.javaScriptEnabled = true
-                            settings.allowContentAccess = true
-                            settings.domStorageEnabled = true
-                            addJavascriptInterface(WebAppInterface(), "citadelInterface")
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                            webViewClient = WebViewClient()
-                        }
-                    }, update = {
-                        val state = bridgeTokenState.value
-                        if (state is BridgeTokenState.BridgeTokenLoaded) {
-                            it.loadUrl("https://cdn.citadelid.com/mobile.html?bridge_token=${state.bridgeToken}")
-                        }
-                    })
-                } else {
-                    MaterialTheme(
-                        colors = MaterialTheme.colors.copy(primary = Color(0xFF0DAB4C))
-                    ) {
+                    if (productState.value.widgetVisible) {
+                        AndroidView(factory = {
+                            cachedWebview ?: WebView(it).apply {
+                                settings.javaScriptEnabled = true
+                                settings.allowContentAccess = true
+                                settings.domStorageEnabled = true
+                                addJavascriptInterface(WebAppInterface(), "citadelInterface")
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+
+                                cachedWebview = this
+                            }
+                        }, update = {
+                            val state = bridgeTokenState.value
+                            if (state is BridgeTokenState.BridgeTokenLoaded && it.url?.contains(state.bridgeToken) != true) {
+                                Log.d(TAG, "update webview, url: ${it.url} token: ${state.bridgeToken}")
+                                it.loadUrl("https://cdn.citadelid.com/mobile.html?bridge_token=${state.bridgeToken}")
+                            }
+                        })
+                    } else {
                         Column(
                             verticalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.padding(8.dp)
@@ -136,7 +147,7 @@ class ProductFragment : Fragment() {
                                 AdditionalSettings(viewModel = viewModel)
                             }
                             Button(
-                                onClick = { viewModel.showWidget() },
+                                onClick = { if (bridgeTokenState.value is BridgeTokenState.BridgeTokenLoaded) viewModel.showWidget() else alert.show() },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp)
@@ -149,9 +160,7 @@ class ProductFragment : Fragment() {
                         }
                     }
                 }
-
             }
         }
-
     }
 }

@@ -4,8 +4,10 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.kittinunf.fuel.*
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.gson.responseObject
+import com.github.kittinunf.fuel.toolbox.HttpClient
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -55,8 +57,8 @@ sealed class BridgeTokenState() {
 data class ProductUIState(
         val productType: String = "income",
         val widgetVisible: Boolean = false,
-        val companyMapping: String = "",
-        val provider: String = "",
+        val companyMapping: String? = null,
+        val provider: String? = null,
         val accountState: AccountState = AccountState(),
 ) {
 }
@@ -74,11 +76,20 @@ data class SettingsUIState(
 @ExperimentalCoroutinesApi
 class MainViewModel : ViewModel() {
     private lateinit var preferences: SharedPreferences
+
+    private val _activeTabState =
+        MutableStateFlow<Int>(0)
+    val activeTabState: StateFlow<Int> = _activeTabState
+
+    fun setTab(tab: Int) = viewModelScope.launch {
+        _activeTabState.value = tab
+    }
+
     private val _bridgeTokenState =
             MutableStateFlow<BridgeTokenState>(BridgeTokenState.BridgeTokenLoading)
     val bridgeTokenState: StateFlow<BridgeTokenState> = _bridgeTokenState
 
-    private val _productUIState = MutableStateFlow<ProductUIState>(ProductUIState())
+    private val _productUIState = MutableStateFlow(ProductUIState())
     val productUIState: StateFlow<ProductUIState> = _productUIState
 
     fun changeProduct(productType: String) = viewModelScope.launch {
@@ -97,13 +108,13 @@ class MainViewModel : ViewModel() {
         log("Closing widget")
     }
 
-    fun changeCompanyMapping(mapping: String) = viewModelScope.launch {
+    fun changeCompanyMapping(mapping: String?) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(companyMapping = mapping)
 
         fetchBridgeToken()
     }
 
-    fun changeProvider(provider: String) = viewModelScope.launch {
+    fun changeProvider(provider: String?) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(provider = provider)
 
         fetchBridgeToken()
@@ -199,8 +210,8 @@ class MainViewModel : ViewModel() {
         val body = gson.toJson(
                 BridgeTokenRequest(
                         productUIState.value.productType,
-                        state.companyMapping ?: "",
-                        state.provider ?: "",
+                        state.companyMapping,
+                        state.provider,
                         if (state.productType === "deposit_switch" || state.productType === "pll") null else state.accountState
                 )
         )
@@ -221,13 +232,14 @@ class MainViewModel : ViewModel() {
                         )
                 )
                 .body(body)
-                .responseObject<BridgeTokenResponse> { _, _, result ->
+                .responseObject<BridgeTokenResponse> { _, error, result ->
                     val bridgeToken = result.component1()?.bridgeToken
                     if (bridgeToken != null) {
                         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(bridgeToken)
                         log("Fetched bridge token ${bridgeToken}")
                     } else {
                         log("Bridge token error ${result.component2()?.message}")
+                        log("Bridge token error body ${result.component2()?.errorData?.toString(Charsets.UTF_8)}")
                         _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
                     }
                 }

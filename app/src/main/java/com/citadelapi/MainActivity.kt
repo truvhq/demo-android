@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.citadelapi.product.MainViewModel
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.flow.collect
 
 @kotlinx.coroutines.ExperimentalCoroutinesApi
 class MainActivity : AppCompatActivity() {
@@ -17,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pager: ViewPager2;
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -24,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         tabLayout = findViewById(R.id.tabLayout)
         pager = findViewById(R.id.pager)
+        pager.isUserInputEnabled = false
 
         val adapter = PagerAgapter(supportFragmentManager, lifecycle)
 
@@ -38,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                pager.setCurrentItem(tab.position)
+                viewModel.setTab(tab.position)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {
@@ -47,5 +52,11 @@ class MainActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab) {
             }
         })
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.activeTabState.collect {
+                pager.setCurrentItem(it)
+            }
+        }
     }
 }
