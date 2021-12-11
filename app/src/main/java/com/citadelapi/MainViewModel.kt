@@ -34,7 +34,11 @@ data class AccountState(
         @SerializedName("bank_name")
         val bankName: String = "TD Bank",
         @SerializedName("account_type")
-        val accountType: String = "checking"
+        val accountType: String = "checking",
+        @SerializedName("deposit_type")
+        val depositType: String = "amount",
+        @SerializedName("deposit_value")
+        val depositValue: Int = 1
 ) {}
 
 data class BridgeTokenRequest(
@@ -212,7 +216,7 @@ class MainViewModel : ViewModel() {
                         productUIState.value.productType,
                         state.companyMapping,
                         state.provider,
-                        if (state.productType === "deposit_switch" || state.productType === "pll") null else state.accountState
+                        if (state.productType === "deposit_switch" || state.productType === "pll") state.accountState else null
                 )
         )
 

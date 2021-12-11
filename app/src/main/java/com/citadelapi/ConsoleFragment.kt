@@ -41,7 +41,7 @@ class ConsoleFragment : Fragment() {
                         .verticalScroll(scrollState)
                 ) {
                     Title("Console")
-                    Text(state.value, lineHeight = 30.sp)
+                    Text(state.value, lineHeight = 30.sp, modifier = Modifier.padding(vertical = 8.dp))
                 }
             }
         }

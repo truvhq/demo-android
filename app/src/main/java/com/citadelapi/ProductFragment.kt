@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -121,15 +123,22 @@ class ProductFragment : Fragment() {
                             }
                         }, update = {
                             val state = bridgeTokenState.value
-                            if (state is BridgeTokenState.BridgeTokenLoaded && it.url?.contains(state.bridgeToken) != true) {
-                                Log.d(TAG, "update webview, url: ${it.url} token: ${state.bridgeToken}")
+                            if (state is BridgeTokenState.BridgeTokenLoaded && it.url?.contains(
+                                    state.bridgeToken
+                                ) != true
+                            ) {
+                                Log.d(
+                                    TAG,
+                                    "update webview, url: ${it.url} token: ${state.bridgeToken}"
+                                )
                                 it.loadUrl("https://cdn.citadelid.com/mobile.html?bridge_token=${state.bridgeToken}")
                             }
                         })
                     } else {
+                        val scrollState = rememberScrollState(0)
                         Column(
                             verticalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp).verticalScroll(scrollState)
                         ) {
                             Column {
                                 Title("Product")
