@@ -141,6 +141,7 @@ class ProductFragment : Fragment() {
                                         DropdownData("employment", "Employment"),
                                         DropdownData("deposit_switch", "Direct Deposit Switch"),
                                         DropdownData("pll", "Paycheck Linked Loan"),
+                                        DropdownData("admin", "Employee Directory"),
                                     ),
                                     label = "Product"
                                 )
