@@ -2,12 +2,15 @@ package com.citadelapi
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
@@ -28,10 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.lifecycleScope
 import com.citadelapi.product.BridgeTokenState
 import com.citadelapi.product.MainViewModel
 import com.citadelapi.ui.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import org.json.JSONObject
 
 val TAG = "PRODUCT TAB"
@@ -93,11 +98,20 @@ class ProductFragment : Fragment() {
         val alert = AlertDialog.Builder(context)
         alert.setTitle("Can’t open Citadel Bridge")
         alert.setMessage("Add a key or change the environment in the settings to run Citadel Bridge.")
-        alert.setNeutralButton("Open settings") { dialog, _ ->
+        alert.setNeutralButton("Open settings") { _, _ ->
             viewModel.setTab(2)
         }
 
         var cachedWebview: WebView? = null;
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.productUIState.collect {
+                if (!it.widgetVisible) {
+                    cachedWebview = null
+                }
+            }
+        }
+
 
         return ComposeView(requireContext()).apply {
             setContent {
@@ -110,6 +124,17 @@ class ProductFragment : Fragment() {
                     if (productState.value.widgetVisible) {
                         AndroidView(factory = {
                             cachedWebview ?: WebView(it).apply {
+                                webViewClient = object : WebViewClient() {
+                                    override fun shouldOverrideUrlLoading(
+                                        view: WebView?,
+                                        request: WebResourceRequest?
+                                    ): Boolean {
+                                        val i = Intent(Intent.ACTION_VIEW)
+                                        i.data = Uri.parse(url)
+                                        startActivity(i)
+                                        return true
+                                    }
+                                }
                                 settings.javaScriptEnabled = true
                                 settings.allowContentAccess = true
                                 settings.domStorageEnabled = true

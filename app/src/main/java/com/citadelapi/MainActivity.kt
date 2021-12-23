@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launchWhenStarted {
             viewModel.activeTabState.collect {
                 pager.setCurrentItem(it)
+                tabLayout.selectTab(tabLayout.getTabAt(it))
             }
         }
     }
