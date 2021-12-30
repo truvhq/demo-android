@@ -16,11 +16,15 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import com.citadelapi.product.MainViewModel
 import com.citadelapi.ui.Dropdown
 import com.citadelapi.ui.DropdownData
+import com.citadelapi.ui.PasswordField
 import com.citadelapi.ui.Title
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -70,29 +74,31 @@ fun SettingsPage(
             value = state.value.clientId,
             onValueChange = { viewModel.changeClientId(it) },
             label = { Text("Client ID") },
+            singleLine = true,
             modifier = Modifier
+                .padding(vertical = 4.dp)
                 .fillMaxWidth()
         )
-        OutlinedTextField(
+        Text(
+            text = "Access keys",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            modifier = Modifier.padding(top = 24.dp)
+        )
+        PasswordField(
             value = state.value.sandbox,
             onValueChange = { viewModel.changeSandboxKey(it) },
             label = { Text("Sandbox") },
-            modifier = Modifier
-                .fillMaxWidth()
         )
-        OutlinedTextField(
+        PasswordField(
             value = state.value.dev,
             onValueChange = { viewModel.changeDevKey(it) },
             label = { Text("Development") },
-            modifier = Modifier
-                .fillMaxWidth()
         )
-        OutlinedTextField(
+        PasswordField(
             value = state.value.prod,
             onValueChange = { viewModel.changeProdKey(it) },
             label = { Text("Production") },
-            modifier = Modifier
-                .fillMaxWidth()
         )
     }
 }

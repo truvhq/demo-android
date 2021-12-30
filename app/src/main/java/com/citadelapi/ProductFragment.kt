@@ -9,10 +9,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.JavascriptInterface
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -130,9 +128,18 @@ class ProductFragment : Fragment() {
                                         request: WebResourceRequest?
                                     ): Boolean {
                                         val i = Intent(Intent.ACTION_VIEW)
-                                        i.data = Uri.parse(url)
+                                        i.data = request?.url
                                         startActivity(i)
                                         return true
+                                    }
+
+                                    override fun onReceivedError(
+                                        view: WebView?,
+                                        request: WebResourceRequest?,
+                                        error: WebResourceError?
+                                    ) {
+                                        Toast.makeText(getActivity(), "Your Internet Connection May not be active", Toast.LENGTH_LONG).show();
+                                        viewModel.hideWidget()
                                     }
                                 }
                                 settings.javaScriptEnabled = true
@@ -176,6 +183,7 @@ class ProductFragment : Fragment() {
                                         DropdownData("deposit_switch", "Direct Deposit Switch"),
                                         DropdownData("pll", "Paycheck Linked Loan"),
                                         DropdownData("admin", "Employee Directory"),
+                                        DropdownData("admin", "Payroll History"),
                                     ),
                                     label = "Product"
                                 )

@@ -4,6 +4,11 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+        storeFile file('/Users/dmitrydorofeev/Downloads/deployment_cert.der')
+        }
+    }
     compileSdk 31
     buildToolsVersion '31.0.0'
 

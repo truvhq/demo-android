@@ -12,8 +12,8 @@ import androidx.compose.ui.unit.dp
 fun Title(title: String) {
     Text(
         title,
-        modifier = Modifier.padding(8.dp),
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold
+        modifier = Modifier.padding(vertical = 12.dp),
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Medium
     )
 }

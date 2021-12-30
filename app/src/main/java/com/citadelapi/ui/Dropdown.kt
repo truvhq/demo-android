@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
@@ -19,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 
 data class DropdownData(val value: String, val label: String) {}
@@ -37,11 +34,14 @@ fun Dropdown(
         Icons.Filled.KeyboardArrowUp
     else
         Icons.Filled.KeyboardArrowDown
+    var selectedLabel by remember {
+        mutableStateOf(options.find { it.value == value }?.label)
+    }
 
     Column() {
         Box() {
             OutlinedTextField(
-                value = options.find { it.value == value }?.label ?: "",
+                value = selectedLabel ?: "",
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier
@@ -55,9 +55,11 @@ fun Dropdown(
                         Modifier.clickable { expanded = !expanded })
                 }
             )
-            Box(modifier = Modifier.matchParentSize().clickable {
-                expanded = !expanded
-            })
+            Box(modifier = Modifier
+                .matchParentSize()
+                .clickable {
+                    expanded = !expanded
+                })
         }
         DropdownMenu(
             expanded = expanded,
@@ -65,7 +67,7 @@ fun Dropdown(
             modifier = Modifier.width(with(LocalDensity.current) { textfieldSize.width.toDp() }),
         ) {
             options.map {
-                DropdownMenuItem(onClick = { onChange(it.value); expanded = false; }) {
+                DropdownMenuItem(onClick = { selectedLabel = it.label; onChange(it.value); expanded = false; }) {
                     Text(it.label)
                 }
             }
