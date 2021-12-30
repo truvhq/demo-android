@@ -208,6 +208,16 @@ class MainViewModel : ViewModel() {
         val devKey = settingsUIState.value.dev
         val prodKey = settingsUIState.value.prod
 
+        val secret = when (env) {
+            "dev" -> devKey
+            "prod" -> prodKey
+            else -> sandboxKey
+        }
+
+        if (secret == "") {
+            return;
+        }
+
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
         val state = productUIState.value
         val gson = Gson()
@@ -228,11 +238,7 @@ class MainViewModel : ViewModel() {
                         mapOf(
                                 "Content-Type" to "application/json",
                                 "X-Access-Client-Id" to clientId,
-                                "X-Access-Secret" to when (env) {
-                                    "dev" -> devKey
-                                    "prod" -> prodKey
-                                    else -> sandboxKey
-                                }
+                                "X-Access-Secret" to secret
                         )
                 )
                 .body(body)

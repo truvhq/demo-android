@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material.OutlinedTextField
@@ -58,7 +60,8 @@ fun SettingsPage(
     viewModel: MainViewModel
 ) {
     val state = viewModel.settingsUIState.collectAsState()
-    Column(Modifier.padding(horizontal = 20.dp)) {
+    val scrollState = rememberScrollState(0)
+    Column(Modifier.padding(horizontal = 20.dp).verticalScroll(scrollState)) {
         Title("Settings")
         Dropdown(
             value = state.value.env,
