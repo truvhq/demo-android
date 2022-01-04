@@ -261,7 +261,7 @@ class MainViewModel : ViewModel() {
                 )
             )
             .body(body)
-            .responseObject<BridgeTokenResponse> { _, error, result ->
+            .responseObject<BridgeTokenResponse> { _, _, result ->
                 val bridgeToken = result.component1()?.bridgeToken
                 if (bridgeToken != null) {
                     _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(bridgeToken)
