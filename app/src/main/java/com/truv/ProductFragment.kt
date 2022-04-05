@@ -1,9 +1,8 @@
-package com.citadelapi
+package com.truv
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -24,15 +23,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
-import com.citadelapi.product.BridgeTokenState
-import com.citadelapi.product.MainViewModel
-import com.citadelapi.ui.*
+import com.truv.product.BridgeTokenState
+import com.truv.product.MainViewModel
+import com.truv.ui.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import org.json.JSONObject
@@ -94,8 +92,8 @@ class ProductFragment : Fragment() {
     ): View {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         val alert = AlertDialog.Builder(context)
-        alert.setTitle("Can’t open Citadel Bridge")
-        alert.setMessage("Add a key or change the environment in the settings to run Citadel Bridge.")
+        alert.setTitle("Can’t open Truv Bridge")
+        alert.setMessage("Add a key or change the environment in the settings to run Truv Bridge.")
         alert.setNeutralButton("Open settings") { _, _ ->
             viewModel.setTab(2)
         }
@@ -196,7 +194,7 @@ class ProductFragment : Fragment() {
                                     .padding(vertical = 8.dp)
                             ) {
                                 Text(
-                                    "OPEN CITADEL BRIDGE",
+                                    "OPEN TRUV BRIDGE",
                                     modifier = Modifier.padding(vertical = 8.dp),
                                 )
                             }

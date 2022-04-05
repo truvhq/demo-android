@@ -1,4 +1,4 @@
-package com.citadelapi
+package com.truv
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -19,15 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-import com.citadelapi.product.MainViewModel
-import com.citadelapi.ui.Dropdown
-import com.citadelapi.ui.DropdownData
-import com.citadelapi.ui.PasswordField
-import com.citadelapi.ui.Title
+import com.truv.product.MainViewModel
+import com.truv.ui.Dropdown
+import com.truv.ui.DropdownData
+import com.truv.ui.PasswordField
+import com.truv.ui.Title
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi

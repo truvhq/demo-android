@@ -1,7 +1,6 @@
-package com.citadelapi.ui
+package com.truv.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.OutlinedTextField

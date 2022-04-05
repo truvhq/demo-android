@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Citadel API</string>
+    <string name="app_name">Truv</string>
     <string-array name="envs">
         <item>sandbox</item>
         <item>dev</item>

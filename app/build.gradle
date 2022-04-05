@@ -13,7 +13,7 @@ android {
     buildToolsVersion '31.0.0'
 
     defaultConfig {
-        applicationId "com.citadelapi"
+        applicationId "com.truv"
         minSdk 21
         targetSdk 31
         versionCode 2

@@ -1,4 +1,4 @@
-package com.citadelapi
+package com.truv
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -14,9 +14,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.*
-import com.citadelapi.product.MainViewModel
+import com.truv.product.MainViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.citadelapi.ui.Title
+import com.truv.ui.Title
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 

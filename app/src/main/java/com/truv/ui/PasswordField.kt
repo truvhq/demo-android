@@ -1,4 +1,4 @@
-package com.citadelapi.ui
+package com.truv.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

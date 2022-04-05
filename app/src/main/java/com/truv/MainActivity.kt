@@ -1,4 +1,4 @@
-package com.citadelapi
+package com.truv
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
@@ -7,7 +7,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import com.citadelapi.product.MainViewModel
+import com.truv.R
+import com.truv.product.MainViewModel
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.collect
 
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = PagerAgapter(supportFragmentManager, lifecycle)
 
-        val sharedPreference =  getSharedPreferences("CITADEL_SETTINGS", Context.MODE_PRIVATE)
+        val sharedPreference =  getSharedPreferences("TRUV_SETTINGS", Context.MODE_PRIVATE)
         viewModel.init(sharedPreference)
 
         pager.setAdapter(adapter)
