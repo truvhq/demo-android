@@ -80,4 +80,7 @@ dependencies {
     implementation 'com.github.kittinunf.fuel:fuel-gson:2.3.1'
 
     implementation 'com.google.code.gson:gson:2.8.9'
+
+    // Truv SDK
+    implementation 'com.github.truvhq:android-sdk:0.1'
 }
