@@ -1,4 +1,4 @@
-package com.truv.product
+package com.truv
 
 import android.content.SharedPreferences
 import android.util.Log
@@ -232,7 +232,7 @@ class MainViewModel : ViewModel() {
 
         if (secret == "") {
             Log.d("ViewModel", "stop fetching bridgetToken, secret is empty")
-            return;
+            return
         }
 
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading

@@ -14,7 +14,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.*
-import com.truv.product.MainViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.truv.ui.Title
 import kotlinx.coroutines.ExperimentalCoroutinesApi

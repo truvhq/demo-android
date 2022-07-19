@@ -32,13 +32,10 @@ import com.truv.product.BridgeTokenState
 import com.truv.product.MainViewModel
 import com.truv.ui.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import org.json.JSONObject
-
-val TAG = "PRODUCT TAB"
 
 @ExperimentalCoroutinesApi
 class ProductFragment : Fragment() {
+
     private lateinit var viewModel: MainViewModel
 
     inner class WebAppInterface {
@@ -108,7 +105,6 @@ class ProductFragment : Fragment() {
             }
         }
 
-
         return ComposeView(requireContext()).apply {
             setContent {
                 MaterialTheme(
@@ -168,7 +164,9 @@ class ProductFragment : Fragment() {
                         val scrollState = rememberScrollState(0)
                         Column(
                             verticalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.padding(8.dp).verticalScroll(scrollState)
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .verticalScroll(scrollState)
                         ) {
                             Column {
                                 Title("Product")
@@ -204,4 +202,9 @@ class ProductFragment : Fragment() {
             }
         }
     }
+
+    companion object {
+        private const val TAG = "PRODUCT TAB"
+    }
+
 }
