@@ -46,12 +46,12 @@ class ProductFragment : Fragment() {
             viewModel.setTab(2)
         }
 
-        var cachedWebview: TruvBridgeView? = null
+        var bridgeView: TruvBridgeView? = null
 
         lifecycleScope.launchWhenStarted {
             viewModel.productUIState.collect {
                 if (!it.widgetVisible) {
-                    cachedWebview = null
+                    bridgeView = null
                 }
             }
         }
@@ -66,9 +66,9 @@ class ProductFragment : Fragment() {
 
                     if (productState.value.widgetVisible) {
                         AndroidView(factory = {
-                            cachedWebview ?: TruvBridgeView(it).apply {
+                            bridgeView ?: TruvBridgeView(it).apply {
                                 addEventListener(viewModel.truvBridgeEventListener)
-                                cachedWebview = this
+                                bridgeView = this
                             }
                         }, update = {
                             val state = bridgeTokenState.value
