@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.gson.responseObject
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.truv.models.TruvEventPayload
+import com.truv.models.TruvSuccessPayload
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -97,7 +98,7 @@ class MainViewModel : ViewModel() {
 
     val truvBridgeEventListener = object : TruvEventsListener {
 
-        override fun onSuccess() {
+        override fun onSuccess(payload: TruvSuccessPayload) {
             log("onSuccess callback invoked")
             hideWidget()
         }
