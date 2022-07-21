@@ -1,4 +1,4 @@
-package com.truv.product
+package com.truv
 
 import android.content.SharedPreferences
 import android.util.Log
@@ -9,6 +9,8 @@ import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.gson.responseObject
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.truv.models.TruvEventPayload
+import com.truv.models.TruvSuccessPayload
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,10 +96,38 @@ class MainViewModel : ViewModel() {
     private val _productUIState = MutableStateFlow(ProductUIState())
     val productUIState: StateFlow<ProductUIState> = _productUIState
 
+    val truvBridgeEventListener = object : TruvEventsListener {
+
+        override fun onSuccess(payload: TruvSuccessPayload) {
+            log("onSuccess callback invoked")
+            hideWidget()
+        }
+
+        override fun onEvent(event: TruvEventPayload.EventType) {
+            if (event == TruvEventPayload.EventType.CLOSE) {
+                hideWidget()
+            }
+        }
+
+        override fun onClose() {
+            log("onClose callback invoked")
+            hideWidget()
+        }
+
+        override fun onLoad() {
+            log("onLoad callback invoked")
+        }
+
+        override fun onError() {
+            log("onError callback invoked")
+        }
+
+    }
+
     fun changeProduct(productType: String) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(productType = productType)
 
-        fetchBridgeToken();
+        fetchBridgeToken()
     }
 
     fun showWidget() = viewModelScope.launch {
@@ -232,7 +262,7 @@ class MainViewModel : ViewModel() {
 
         if (secret == "") {
             Log.d("ViewModel", "stop fetching bridgetToken, secret is empty")
-            return;
+            return
         }
 
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
@@ -263,7 +293,7 @@ class MainViewModel : ViewModel() {
                 val bridgeToken = result.component1()?.bridgeToken
                 if (bridgeToken != null) {
                     _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(bridgeToken)
-                    log("Fetched bridge token ${bridgeToken}")
+                    log("Fetched bridge token $bridgeToken")
                 } else {
                     log("Bridge token error ${result.component2()?.message}")
                     log("Bridge token error body ${result.component2()?.errorData?.toString(Charsets.UTF_8)}")

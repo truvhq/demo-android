@@ -7,21 +7,18 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import com.truv.R
-import com.truv.product.MainViewModel
 import com.google.android.material.tabs.TabLayout
-import kotlinx.coroutines.flow.collect
 
 @kotlinx.coroutines.ExperimentalCoroutinesApi
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
-    private lateinit var tabLayout: TabLayout;
-    private lateinit var pager: ViewPager2;
+    private lateinit var tabLayout: TabLayout
+    private lateinit var pager: ViewPager2
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -36,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         val sharedPreference =  getSharedPreferences("TRUV_SETTINGS", Context.MODE_PRIVATE)
         viewModel.init(sharedPreference)
 
-        pager.setAdapter(adapter)
+        pager.adapter = adapter
 
         tabLayout.addTab(tabLayout.newTab().setText("Product").setIcon(R.drawable.ic_product))
         tabLayout.addTab(tabLayout.newTab().setText("Console").setIcon(R.drawable.ic_console))
@@ -56,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launchWhenStarted {
             viewModel.activeTabState.collect {
-                pager.setCurrentItem(it)
+                pager.currentItem = it
                 tabLayout.selectTab(tabLayout.getTabAt(it))
             }
         }
