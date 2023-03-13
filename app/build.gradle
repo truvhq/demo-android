@@ -82,5 +82,5 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
 
     // Truv SDK
-    implementation 'com.github.truvhq:android-sdk:0.2'
+    implementation 'com.github.truvhq:android-sdk:1.0.0'
 }
