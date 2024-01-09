@@ -81,6 +81,10 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
 
     // Truv SDK
-//    implementation 'com.github.truvhq:android-sdk:1.0.0'
-    implementation project(':truv')
+    def truvLibraryProject = new File(rootProject.projectDir, '../android-sdk/truv_bridge').exists()
+    if (truvLibraryProject) {
+        implementation project(':truv')
+    } else {
+        implementation 'com.github.truvhq:android-sdk:1.0.0'
+    }
 }

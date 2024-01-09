@@ -8,5 +8,8 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Truv"
 include ':app'
-include(':truv')
-project(':truv').projectDir = new File(rootProject.projectDir, '../android-sdk/truv_bridge')
+def truvLibraryProject = new File(rootProject.projectDir, '../android-sdk/truv_bridge')
+if (truvLibraryProject.exists()) {
+    include(':truv')
+    project(':truv').projectDir = truvLibraryProject
+}
