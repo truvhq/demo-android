@@ -8,3 +8,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Truv"
 include ':app'
+include(':truv')
+project(':truv').projectDir = new File(rootProject.projectDir, '../android-sdk/truv_bridge')

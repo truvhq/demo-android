@@ -9,13 +9,12 @@ android {
         storeFile file('/Users/dmitrydorofeev/Downloads/deployment_cert.der')
         }
     }
-    compileSdk 32
-    buildToolsVersion '31.0.0'
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.truv"
         minSdk 21
-        targetSdk 32
+        targetSdk 34
         versionCode 3
         versionName "1.2"
 
@@ -42,7 +41,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
     }
-    compileSdkVersion 32
+    compileSdkVersion 34
 }
 
 dependencies {
@@ -82,5 +81,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
 
     // Truv SDK
-    implementation 'com.github.truvhq:android-sdk:1.0.0'
+//    implementation 'com.github.truvhq:android-sdk:1.0.0'
+    implementation project(':truv')
 }
