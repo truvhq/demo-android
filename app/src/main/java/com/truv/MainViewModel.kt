@@ -15,6 +15,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.truv.api.TruvApiClient
+import com.truv.webview.TruvEventsListener
 
 data class AccountState(
     @SerializedName("account_number") var accountNumber: String = "160026001",
@@ -83,8 +84,8 @@ class MainViewModel : ViewModel() {
             hideWidget()
         }
 
-        override fun onEvent(event: TruvEventPayload.EventType) {
-            if (event == TruvEventPayload.EventType.CLOSE) {
+        override fun onEvent(event: TruvEventPayload) {
+            if (event.eventType == TruvEventPayload.EventType.CLOSE) {
                 hideWidget()
             }
         }

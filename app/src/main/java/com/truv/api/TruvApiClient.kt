@@ -15,6 +15,7 @@ import com.truv.BridgeTokenRequest
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import java.util.UUID
 
 data class BridgeTokenResponse(
     @SerializedName("bridge_token") var bridgeToken: String,
@@ -57,11 +58,11 @@ class TruvApiClient {
                 "X-Access-Client-Id" to clientId,
                 "X-Access-Secret" to clientSecret
             )
-        ).body(gson.toJson(mapOf("external_user_id" to "demo-app")))
+        ).body(gson.toJson(mapOf("external_user_id" to "demo-app-${UUID.randomUUID()}")))
             .awaitObjectResult(CreateUserResponse.Deserializer())
             .fold(
                 { response -> onSuccess(response.id) },
-                { error -> onFailure(error.response.responseMessage) },
+                { error -> onFailure(String(error.response.data)) },
             )
     }
 
@@ -80,7 +81,7 @@ class TruvApiClient {
             )
         ).body(gson.toJson(request)).awaitObjectResult(BridgeTokenResponse.Deserializer()).fold(
             { response -> onSuccess(response.bridgeToken) },
-            { error -> onFailure(error.response.responseMessage) },
+            { error -> onFailure(error.response.data.toString(Charsets.UTF_8)) },
         )
 
     }
