@@ -3,10 +3,13 @@ plugins {
     id 'kotlin-android'
 }
 
+
+def truvSdkVersion = '1.3.0'
+
 android {
     signingConfigs {
         release {
-        storeFile file('/Users/dmitrydorofeev/Downloads/deployment_cert.der')
+            storeFile file('/Users/dmitrydorofeev/Downloads/deployment_cert.der')
         }
     }
     compileSdk 33
@@ -87,6 +90,6 @@ dependencies {
     if (truvLibraryProject) {
         implementation project(':truv')
     } else {
-        implementation 'com.github.truvhq:android-sdk:6773943edb69abfcb670902640b3fda201761aad'
+        implementation "com.github.truvhq:android-sdk:$truvSdkVersion"
     }
 }
