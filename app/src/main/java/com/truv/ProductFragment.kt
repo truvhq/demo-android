@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,25 +22,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.truv.ui.*
 import com.truv.webview.TruvBridgeView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+
 @ExperimentalCoroutinesApi
 class ProductFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
-
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+        var bridgeView: TruvBridgeView? = null
         val alert = AlertDialog.Builder(context)
         alert.setTitle("Can’t open Truv Bridge")
         alert.setMessage("Add a key or change the environment in the settings to run Truv Bridge.")
@@ -47,14 +49,16 @@ class ProductFragment : Fragment() {
             viewModel.setTab(2)
         }
 
-        var bridgeView: TruvBridgeView? = null
-
         lifecycleScope.launchWhenStarted {
             viewModel.productUIState.collect {
                 if (!it.widgetVisible) {
                     bridgeView = null
                 }
             }
+        }
+
+        var activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+           bridgeView?.onActivityResultListener(it)
         }
 
         return ComposeView(requireContext()).apply {
@@ -69,6 +73,7 @@ class ProductFragment : Fragment() {
                         AndroidView(factory = {
                             bridgeView ?: TruvBridgeView(it).apply {
                                 addEventListener(viewModel.truvBridgeEventListener)
+                                addActivityForResultLauncher(activityResultLauncher)
                                 bridgeView = this
                             }
                         }, update = {
