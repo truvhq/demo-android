@@ -2,12 +2,12 @@ package com.truv
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,13 +35,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 class ProductFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
-    var bridgeView: TruvBridgeView? = null
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+        var bridgeView: TruvBridgeView? = null
         val alert = AlertDialog.Builder(context)
         alert.setTitle("Can’t open Truv Bridge")
         alert.setMessage("Add a key or change the environment in the settings to run Truv Bridge.")
@@ -57,6 +57,10 @@ class ProductFragment : Fragment() {
             }
         }
 
+        var activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+           bridgeView?.onActivityResultListener(it)
+        }
+
         return ComposeView(requireContext()).apply {
             setContent {
                 MaterialTheme(
@@ -69,6 +73,7 @@ class ProductFragment : Fragment() {
                         AndroidView(factory = {
                             bridgeView ?: TruvBridgeView(it).apply {
                                 addEventListener(viewModel.truvBridgeEventListener)
+                                addActivityForResultLauncher(activityResultLauncher)
                                 bridgeView = this
                             }
                         }, update = {
@@ -124,11 +129,6 @@ class ProductFragment : Fragment() {
                 }
             }
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        bridgeView?.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
