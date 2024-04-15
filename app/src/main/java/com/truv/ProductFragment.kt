@@ -98,6 +98,9 @@ class ProductFragment : Fragment() {
                                     onChange = { viewModel.changeProduct(it) },
                                     options = arrayOf(
                                         DropdownData("income", "Income"),
+                                        DropdownData("transactions", "Transactions"),
+                                        DropdownData("assets", "Assets"),
+                                        DropdownData("insurance", "Insurance"),
                                         DropdownData("employment", "Employment"),
                                         DropdownData("deposit_switch", "Direct Deposit Switch"),
                                         DropdownData("pll", "Paycheck Linked Loan"),
