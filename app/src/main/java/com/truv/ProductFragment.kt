@@ -2,6 +2,7 @@ package com.truv
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,19 +22,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import com.truv.ui.*
 import com.truv.webview.TruvBridgeView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+
 @ExperimentalCoroutinesApi
 class ProductFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
-
+    var bridgeView: TruvBridgeView? = null
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,8 +48,6 @@ class ProductFragment : Fragment() {
         alert.setNeutralButton("Open settings") { _, _ ->
             viewModel.setTab(2)
         }
-
-        var bridgeView: TruvBridgeView? = null
 
         lifecycleScope.launchWhenStarted {
             viewModel.productUIState.collect {
@@ -124,6 +124,11 @@ class ProductFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        bridgeView?.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
