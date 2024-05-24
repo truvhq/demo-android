@@ -260,32 +260,33 @@ class MainViewModel : ViewModel() {
         val state = productUIState.value
 
         bridgeTokenJob = viewModelScope.launch {
-            var userId = cachedUserId;
-            if (userId == "") {
-                apiClient.createUser({
-                    userId = it
-                    changeUserId(it);
-                    log("User created with id: $it")
+            withContext(Dispatchers.Default) {
+                var userId = cachedUserId;
+                if (userId == "") {
+                    apiClient.createUser({
+                        userId = it
+                        changeUserId(it);
+                        log("User created with id: $it")
+                    }, {
+                        log("User creation error: $it")
+                    })
+                } else {
+                    log("Got saved user with id: $userId")
+                }
+
+                apiClient.createBridgeToken(userId, BridgeTokenRequest(
+                    productUIState.value.productType,
+                    state.companyMapping,
+                    state.provider,
+                    if (state.productType === "deposit_switch" || state.productType === "pll") state.accountState else null
+                ), {
+                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(it)
+                    log("Fetched bridge token: $it")
                 }, {
-                    log("User creation error: $it")
+                    log("Bridge token error: $it")
+                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
                 })
-            } else {
-                log("Got saved user with id: $userId")
             }
-
-            apiClient.createBridgeToken(userId, BridgeTokenRequest(
-                productUIState.value.productType,
-                state.companyMapping,
-                state.provider,
-                if (state.productType === "deposit_switch" || state.productType === "pll") state.accountState else null
-            ), {
-                _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(it)
-                log("Fetched bridge token: $it")
-            }, {
-                log("Bridge token error: $it")
-                _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
-            })
-
         }
 
     }
