@@ -1,6 +1,7 @@
 package com.truv
 
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -56,6 +57,13 @@ class MainActivity : AppCompatActivity() {
                 pager.currentItem = it
                 tabLayout.selectTab(tabLayout.getTabAt(it))
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        supportFragmentManager.fragments.forEach {
+            it.onActivityResult(requestCode, resultCode, data)
         }
     }
 }
