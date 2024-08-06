@@ -4,10 +4,6 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.kittinunf.fuel.core.await
-import com.github.kittinunf.fuel.core.awaitResponse
-import com.github.kittinunf.fuel.core.awaitUnit
-import com.github.kittinunf.fuel.coroutines.await
 import com.google.gson.annotations.SerializedName
 import com.truv.models.TruvEventPayload
 import com.truv.models.TruvSuccessPayload
@@ -53,7 +49,6 @@ data class SettingsUIState(
     val dev: String = "",
     val sandbox: String = "",
     val prod: String = "",
-    val userId: String = ""
 ) {
 
 }
@@ -162,7 +157,6 @@ class MainViewModel : ViewModel() {
             dev = developmentKey!!,
             prod = productionKey!!,
             clientId = clientId!!,
-            userId = userId!!
         )
 
         fetchBridgeToken()
@@ -219,7 +213,6 @@ class MainViewModel : ViewModel() {
     }
 
     fun changeUserId(userId: String) = viewModelScope.launch {
-        _settingsUIState.value = settingsUIState.value.copy(userId = userId)
         val p = preferences.edit()
         p.putString("user_id", userId)
         p.apply()
@@ -241,7 +234,6 @@ class MainViewModel : ViewModel() {
         val sandboxKey = settingsUIState.value.sandbox
         val devKey = settingsUIState.value.dev
         val prodKey = settingsUIState.value.prod
-        val cachedUserId = settingsUIState.value.userId
 
         val secret = when (env) {
             "dev" -> devKey
@@ -261,33 +253,32 @@ class MainViewModel : ViewModel() {
 
         bridgeTokenJob = viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                var userId = cachedUserId;
-                if (userId == "") {
-                    apiClient.createUser({
-                        userId = it
-                        changeUserId(it);
-                        log("User created with id: $it")
-                    }, {
-                        log("User creation error: $it")
-                    })
-                } else {
-                    log("Got saved user with id: $userId")
-                }
-
-                apiClient.createBridgeToken(userId, BridgeTokenRequest(
-                    productUIState.value.productType,
-                    state.companyMapping,
-                    state.provider,
-                    if (state.productType === "deposit_switch" || state.productType === "pll") state.accountState else null
-                ), {
-                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(it)
-                    log("Fetched bridge token: $it")
+                apiClient.createUser({ userId ->
+                    changeUserId(userId)
+                    createBridgeToken(userId, state)
+                    log("User created with id: $userId")
                 }, {
-                    log("Bridge token error: $it")
-                    _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
+                    log("User creation error: $it")
                 })
             }
-        }
 
+
+        }
     }
+
+    private fun createBridgeToken(userId: String, state: ProductUIState) {
+        apiClient.createBridgeToken(userId, BridgeTokenRequest(
+            productUIState.value.productType,
+            state.companyMapping,
+            state.provider,
+            if (state.productType === "deposit_switch" || state.productType === "pll") state.accountState else null
+        ), {
+            _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(it)
+            log("Fetched bridge token: $it")
+        }, {
+            log("Bridge token error: $it")
+            _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
+        })
+    }
+
 }
