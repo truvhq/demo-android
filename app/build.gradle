@@ -4,7 +4,7 @@ plugins {
 }
 
 
-def truvSdkVersion = '1.5.0'
+def truvSdkVersion = '1.6.0-rc.1'
 
 android {
     signingConfigs {
@@ -88,3 +88,4 @@ dependencies {
     // Truv SDK
     implementation "com.truv.sdk:android_sdk:$truvSdkVersion"
 }
+

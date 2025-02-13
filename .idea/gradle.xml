@@ -4,10 +4,25 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/../android-sdk" name="Truv Android SDK">
+                <projects>
+                  <project path="$PROJECT_DIR$/../android-sdk" />
+                  <project path="$PROJECT_DIR$/../android-sdk/truv_bridge" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
+        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="jbr-17" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$/../android-sdk" />
+            <option value="$PROJECT_DIR$/../android-sdk/truv_bridge" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
           </set>
