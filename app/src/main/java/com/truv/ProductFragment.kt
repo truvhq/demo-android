@@ -26,6 +26,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.truv.models.TruvBridgeViewConfig
 import com.truv.ui.*
 import com.truv.webview.TruvBridgeView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -68,6 +69,11 @@ class ProductFragment : Fragment() {
                     if (productState.value.widgetVisible) {
                         AndroidView(factory = {
                             bridgeView ?: TruvBridgeView(it).apply {
+                                setConfig(
+                                    TruvBridgeViewConfig(
+                                        cdnUrl = viewModel.getServerUrls().cdnUrl
+                                    )
+                                )
                                 addEventListener(viewModel.truvBridgeEventListener)
                                 bridgeView = this
                             }
