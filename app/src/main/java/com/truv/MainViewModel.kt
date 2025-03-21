@@ -45,6 +45,7 @@ data class ProductUIState(
 
 data class SettingsUIState(
     val env: String = "",
+    val server: String = "",
     val clientId: String = "",
     val dev: String = "",
     val sandbox: String = "",
@@ -52,6 +53,11 @@ data class SettingsUIState(
 ) {
 
 }
+
+data class ServerUrls(
+    val url: String,
+    val cdnUrl: String
+)
 
 @ExperimentalCoroutinesApi
 class MainViewModel : ViewModel() {
@@ -76,13 +82,10 @@ class MainViewModel : ViewModel() {
 
         override fun onSuccess(payload: TruvSuccessPayload) {
             log("onSuccess callback invoked")
-            hideWidget()
         }
 
         override fun onEvent(event: TruvEventPayload) {
-            if (event.eventType == TruvEventPayload.EventType.CLOSE) {
-                hideWidget()
-            }
+            log("onEvent callback invoked: ${event.eventType} ($event)")
         }
 
         override fun onClose() {
@@ -144,6 +147,7 @@ class MainViewModel : ViewModel() {
     fun init(preferences: SharedPreferences) {
         this.preferences = preferences
 
+        val server = preferences.getString("server", "prod")
         val env = preferences.getString("env", "sandbox")
         val sandboxKey = preferences.getString("sandbox", "")
         val developmentKey = preferences.getString("dev", "")
@@ -152,6 +156,7 @@ class MainViewModel : ViewModel() {
         val userId = preferences.getString("user_id", "")
 
         _settingsUIState.value = settingsUIState.value.copy(
+            server = server!!,
             env = env!!,
             sandbox = sandboxKey!!,
             dev = developmentKey!!,
@@ -165,6 +170,13 @@ class MainViewModel : ViewModel() {
     private val _settingsUIState = MutableStateFlow(SettingsUIState())
     val settingsUIState: StateFlow<SettingsUIState> = _settingsUIState
 
+    fun changeServer(server: String) = viewModelScope.launch {
+        _settingsUIState.value = settingsUIState.value.copy(server = server)
+        val p = preferences.edit()
+        p.putString("server", server)
+        p.apply()
+        fetchBridgeToken()
+    }
 
     fun changeEnv(env: String) = viewModelScope.launch {
         _settingsUIState.value = settingsUIState.value.copy(env = env)
@@ -225,6 +237,18 @@ class MainViewModel : ViewModel() {
 
         fetchBridgeToken()
     }
+    
+    public fun getServerUrls(): ServerUrls {
+        val server = settingsUIState.value.server
+
+        return when (server) {
+            "dev" -> ServerUrls("https://dev.truv.com", "https://cdn-dev.truv.com")
+            "stage" -> ServerUrls("https://stage.truv.com", "https://cdn-stage.truv.com")
+            "prod" -> ServerUrls("https://prod.truv.com", "https://cdn.truv.com")
+            "local" -> ServerUrls("https://dev.truv.com", "http://10.0.2.2:3700")
+            else -> throw IllegalArgumentException("Invalid server: $server")
+        }
+    }
 
     private fun fetchBridgeToken() {
         Log.d("ViewModel", "execute fetchBridgeToken")
@@ -241,12 +265,14 @@ class MainViewModel : ViewModel() {
             else -> sandboxKey
         }
 
+        val (serverUrl) = getServerUrls()
+
         if (secret == "") {
             Log.d("ViewModel", "stop fetching bridgetToken, secret is empty")
             return
         }
 
-        apiClient = TruvApiClient("https://prod.truv.com", clientId, secret);
+        apiClient = TruvApiClient(serverUrl, clientId, secret);
 
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
         val state = productUIState.value

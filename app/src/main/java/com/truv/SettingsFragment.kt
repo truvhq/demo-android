@@ -62,6 +62,17 @@ fun SettingsPage(
     Column(Modifier.padding(horizontal = 20.dp).verticalScroll(scrollState)) {
         Title("Settings")
         Dropdown(
+            value = state.value.server,
+            onChange = { viewModel.changeServer(it) },
+            options = arrayOf(
+                DropdownData("dev", "Development"),
+                DropdownData("stage", "Stage"),
+                DropdownData("prod", "Production"),
+                DropdownData("local", "Local (check README.md in citadel_frontend repo)"),
+            ),
+            label = "Server"
+        )
+        Dropdown(
             value = state.value.env,
             onChange = { viewModel.changeEnv(it) },
             options = arrayOf(
