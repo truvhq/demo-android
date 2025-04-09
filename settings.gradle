@@ -6,12 +6,13 @@ dependencyResolutionManagement {
     }
 }
 
-includeBuild("../android-sdk") {
-    dependencySubstitution {
-        // Substitute a dependency with a project in the included build
-        substitute module("com.truv.sdk:android_sdk") using project(":truv_bridge")
-    }
-}
+// Uncomment to use the local SDK
+// includeBuild("../android-sdk") {
+//     dependencySubstitution {
+//         // Substitute a dependency with a project in the included build
+//         substitute module("com.truv.sdk:android_sdk") using project(":truv_bridge")
+//     }
+// }
 
 rootProject.name = "Truv"
 include ':app'
