@@ -55,7 +55,7 @@ data class SettingsUIState(
 }
 
 data class ServerUrls(
-    val url: String,
+    val apiUrl: String,
     val cdnUrl: String
 )
 
@@ -265,14 +265,14 @@ class MainViewModel : ViewModel() {
             else -> sandboxKey
         }
 
-        val (serverUrl) = getServerUrls()
+        val apiUrl = getServerUrls().apiUrl
 
         if (secret == "") {
             Log.d("ViewModel", "stop fetching bridgetToken, secret is empty")
             return
         }
 
-        apiClient = TruvApiClient(serverUrl, clientId, secret);
+        apiClient = TruvApiClient(apiUrl, clientId, secret)
 
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
         val state = productUIState.value
