@@ -17,6 +17,7 @@ data class AccountState(
     @SerializedName("account_number") var accountNumber: String = "160026001",
     @SerializedName("routing_number") val routingNumber: String = "123456789",
     @SerializedName("bank_name") val bankName: String = "TD Bank",
+    @SerializedName("bank_address") val bankAddress: String = "357 Kings Hwy N, Cherry Hill, NJ 08034, USA",
     @SerializedName("account_type") val accountType: String = "checking",
     @SerializedName("deposit_type") val depositType: String = "amount",
     @SerializedName("deposit_value") val depositValue: Int = 1

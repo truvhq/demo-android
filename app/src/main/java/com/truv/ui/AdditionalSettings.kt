@@ -140,6 +140,18 @@ fun AdditionalSettings(viewModel: MainViewModel) {
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
+                OutlinedTextField(
+                    label = { Text(text = "Bank address") },
+                    value = state.value.accountState.bankAddress,
+                    onValueChange = {
+                        viewModel.changeAccountState(
+                            state.value.accountState.copy(
+                                bankAddress = it
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Dropdown(
                     value = state.value.accountState.accountType,
                     onChange = { viewModel.changeAccountState(
