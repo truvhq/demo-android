@@ -71,7 +71,8 @@ class ProductFragment : Fragment() {
                             bridgeView ?: TruvBridgeView(it).apply {
                                 setConfig(
                                     TruvBridgeViewConfig(
-                                        cdnUrl = viewModel.getServerUrls().cdnUrl
+                                        apiUrl = viewModel.getServerUrls().apiUrl,
+                                        cdnUrl = viewModel.getServerUrls().cdnUrl,
                                     )
                                 )
                                 addEventListener(viewModel.truvBridgeEventListener)

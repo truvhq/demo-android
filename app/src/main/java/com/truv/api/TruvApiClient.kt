@@ -58,7 +58,11 @@ class TruvApiClient {
                 "X-Access-Client-Id" to clientId,
                 "X-Access-Secret" to clientSecret
             )
-        ).body(gson.toJson(mapOf("external_user_id" to "demo-app-${UUID.randomUUID()}")))
+        ).body(gson.toJson(mapOf(
+            "external_user_id" to "demo-app-${UUID.randomUUID()}",
+            "first_name" to "John",
+            "last_name" to "Doe",
+        )))
             .awaitObjectResult(CreateUserResponse.Deserializer())
             .fold(
                 { response -> onSuccess(response.id) },

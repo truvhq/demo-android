@@ -17,6 +17,7 @@ data class AccountState(
     @SerializedName("account_number") var accountNumber: String = "160026001",
     @SerializedName("routing_number") val routingNumber: String = "123456789",
     @SerializedName("bank_name") val bankName: String = "TD Bank",
+    @SerializedName("bank_address") val bankAddress: String = "357 Kings Hwy N, Cherry Hill, NJ 08034, USA",
     @SerializedName("account_type") val accountType: String = "checking",
     @SerializedName("deposit_type") val depositType: String = "amount",
     @SerializedName("deposit_value") val depositValue: Int = 1
@@ -55,7 +56,7 @@ data class SettingsUIState(
 }
 
 data class ServerUrls(
-    val url: String,
+    val apiUrl: String,
     val cdnUrl: String
 )
 
@@ -265,14 +266,14 @@ class MainViewModel : ViewModel() {
             else -> sandboxKey
         }
 
-        val (serverUrl) = getServerUrls()
+        val apiUrl = getServerUrls().apiUrl
 
         if (secret == "") {
             Log.d("ViewModel", "stop fetching bridgetToken, secret is empty")
             return
         }
 
-        apiClient = TruvApiClient(serverUrl, clientId, secret);
+        apiClient = TruvApiClient(apiUrl, clientId, secret)
 
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
         val state = productUIState.value
