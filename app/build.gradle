@@ -4,7 +4,7 @@ plugins {
 }
 
 
-def truvSdkVersion = '1.9.1'
+def truvSdkVersion = '1.10.0-rc.2'
 
 android {
     signingConfigs {
