@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         pager.adapter = adapter
 
         tabLayout.addTab(tabLayout.newTab().setText("Product").setIcon(R.drawable.ic_product))
+        tabLayout.addTab(tabLayout.newTab().setText("Order").setIcon(R.drawable.ic_order))
         tabLayout.addTab(tabLayout.newTab().setText("Console").setIcon(R.drawable.ic_console))
         tabLayout.addTab(tabLayout.newTab().setText("Settings").setIcon(R.drawable.ic_settings))
 

@@ -11,7 +11,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.truv.api.TruvApiClient
+import com.truv.models.TruvOrderEvent
 import com.truv.webview.TruvEventsListener
+import com.truv.webview.TruvOrderEventsListener
 
 data class AccountState(
     @SerializedName("account_number") var accountNumber: String = "160026001",
@@ -57,7 +59,8 @@ data class SettingsUIState(
 
 data class ServerUrls(
     val apiUrl: String,
-    val cdnUrl: String
+    val cdnUrl: String,
+    val orderUrl: String,
 )
 
 @ExperimentalCoroutinesApi
@@ -102,6 +105,12 @@ class MainViewModel : ViewModel() {
             log("onError callback invoked")
         }
 
+    }
+
+    val truvOrderEventListener = object : TruvOrderEventsListener {
+        override fun onEvent(event: TruvOrderEvent) {
+            log("order onEvent: $event")
+        }
     }
 
     fun changeProduct(productType: String) = viewModelScope.launch {
@@ -243,10 +252,10 @@ class MainViewModel : ViewModel() {
         val server = settingsUIState.value.server
 
         return when (server) {
-            "dev" -> ServerUrls("https://dev.truv.com", "https://cdn-dev.truv.com")
-            "stage" -> ServerUrls("https://stage.truv.com", "https://cdn-stage.truv.com")
-            "prod" -> ServerUrls("https://prod.truv.com", "https://cdn.truv.com")
-            "local" -> ServerUrls("https://dev.truv.com", "http://10.0.2.2:3700")
+            "dev" -> ServerUrls("https://dev.truv.com", "https://cdn-dev.truv.com", "https://my-dev.truv.com")
+            "stage" -> ServerUrls("https://stage.truv.com", "https://cdn-stage.truv.com", "https://my-stage.truv.com")
+            "prod" -> ServerUrls("https://prod.truv.com", "https://cdn.truv.com", "https://my.truv.com")
+            "local" -> ServerUrls("https://dev.truv.com", "http://10.0.2.2:3700", "http://10.0.2.2:3701")
             else -> throw IllegalArgumentException("Invalid server: $server")
         }
     }

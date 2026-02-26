@@ -11,13 +11,14 @@ class PagerAgapter(fm: FragmentManager, lifecycle: Lifecycle) : FragmentStateAda
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            1 -> ConsoleFragment()
-            2 -> SettingsFragment()
+            1 -> OrderFragment()
+            2 -> ConsoleFragment()
+            3 -> SettingsFragment()
             else -> ProductFragment()
         }
     }
 
     override fun getItemCount(): Int {
-        return 3
+        return 4
     }
 }

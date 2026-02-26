@@ -47,7 +47,7 @@ class ProductFragment : Fragment() {
         alert.setTitle("Can’t open Truv Bridge")
         alert.setMessage("Add a key or change the environment in the settings to run Truv Bridge.")
         alert.setNeutralButton("Open settings") { _, _ ->
-            viewModel.setTab(2)
+            viewModel.setTab(3)
         }
 
         lifecycleScope.launchWhenStarted {
