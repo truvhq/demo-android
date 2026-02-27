@@ -57,6 +57,11 @@ data class SettingsUIState(
 
 }
 
+data class OrderUIState(
+    val token: String = "",
+    val widgetVisible: Boolean = false,
+)
+
 data class ServerUrls(
     val apiUrl: String,
     val cdnUrl: String,
@@ -107,9 +112,25 @@ class MainViewModel : ViewModel() {
 
     }
 
+    private val _orderUIState = MutableStateFlow(OrderUIState())
+    val orderUIState: StateFlow<OrderUIState> = _orderUIState
+
+    fun showOrderWidget(token: String) = viewModelScope.launch {
+        _orderUIState.value = _orderUIState.value.copy(token = token, widgetVisible = true)
+        log("Opening order with token $token")
+    }
+
+    fun hideOrderWidget() = viewModelScope.launch {
+        _orderUIState.value = _orderUIState.value.copy(widgetVisible = false)
+        log("Closing order")
+    }
+
     val truvOrderEventListener = object : TruvOrderEventsListener {
         override fun onEvent(event: TruvOrderEvent) {
             log("order onEvent: $event")
+            if (event is TruvOrderEvent.Close) {
+                hideOrderWidget()
+            }
         }
     }
 

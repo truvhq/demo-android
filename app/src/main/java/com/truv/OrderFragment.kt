@@ -20,17 +20,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.truv.models.TruvBridgeViewConfig
-import com.truv.models.TruvOrderEvent
 import com.truv.ui.Title
 import com.truv.webview.TruvBridgeView
-import com.truv.webview.TruvOrderEventsListener
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
 class OrderFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
+    private var bridgeView: TruvBridgeView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,18 +43,26 @@ class OrderFragment : Fragment() {
         emptyTokenAlert.setMessage("Please enter a valid order bridge token to open the order page.")
         emptyTokenAlert.setNeutralButton("OK") { dialog, _ -> dialog.dismiss() }
 
+        lifecycleScope.launchWhenStarted {
+            viewModel.orderUIState.collect {
+                if (!it.widgetVisible) {
+                    bridgeView = null
+                }
+            }
+        }
+
         return ComposeView(requireContext()).apply {
             setContent {
                 MaterialTheme(
                     colors = MaterialTheme.colors.copy(primary = Color(0xFF0DAB4C))
                 ) {
+                    val orderState = viewModel.orderUIState.collectAsState()
                     var orderToken by remember { mutableStateOf("") }
-                    var widgetVisible by remember { mutableStateOf(false) }
 
-                    if (widgetVisible) {
+                    if (orderState.value.widgetVisible) {
                         AndroidView(factory = { context ->
                             val serverUrls = viewModel.getServerUrls()
-                            TruvBridgeView(context).apply {
+                            bridgeView ?: TruvBridgeView(context).apply {
                                 setConfig(
                                     TruvBridgeViewConfig(
                                         apiUrl = serverUrls.apiUrl,
@@ -62,15 +70,9 @@ class OrderFragment : Fragment() {
                                         orderUrl = serverUrls.orderUrl,
                                     )
                                 )
-                                addOrderEventListener(object : TruvOrderEventsListener {
-                                    override fun onEvent(event: TruvOrderEvent) {
-                                        viewModel.truvOrderEventListener.onEvent(event)
-                                        if (event is TruvOrderEvent.Close) {
-                                            requireActivity().runOnUiThread { widgetVisible = false }
-                                        }
-                                    }
-                                })
-                                loadOrderUrl(orderToken)
+                                addOrderEventListener(viewModel.truvOrderEventListener)
+                                bridgeView = this
+                                loadOrderUrl(orderState.value.token)
                             }
                         })
                     } else {
@@ -92,7 +94,7 @@ class OrderFragment : Fragment() {
                                     if (orderToken.isBlank()) {
                                         emptyTokenAlert.show()
                                     } else {
-                                        widgetVisible = true
+                                        viewModel.showOrderWidget(orderToken)
                                     }
                                 },
                                 modifier = Modifier
