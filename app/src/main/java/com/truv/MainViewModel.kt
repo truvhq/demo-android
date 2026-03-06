@@ -106,10 +106,6 @@ class MainViewModel : ViewModel() {
             log("onLoad callback invoked")
         }
 
-        override fun onError() {
-            log("onError callback invoked")
-        }
-
     }
 
     private val _orderUIState = MutableStateFlow(OrderUIState())
