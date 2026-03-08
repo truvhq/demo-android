@@ -122,11 +122,15 @@ class MainViewModel : ViewModel() {
     }
 
     val truvOrderEventListener = object : TruvOrderEventsListener {
-        override fun onEvent(event: TruvOrderEvent) {
+        override fun onOrderEvent(event: TruvOrderEvent) {
             log("order onEvent: $event")
             if (event is TruvOrderEvent.Close) {
                 hideOrderWidget()
             }
+        }
+
+        override fun onBridgeEvent(event: TruvEventPayload) {
+            log("bridge onEvent: $event")
         }
     }
 
