@@ -23,14 +23,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.truv.models.TruvBridgeViewConfig
 import com.truv.ui.Title
-import com.truv.webview.TruvBridgeView
+import com.truv.webview.TruvOrderView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
 class OrderFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
-    private var bridgeView: TruvBridgeView? = null
+    private var bridgeView: TruvOrderView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,7 +62,7 @@ class OrderFragment : Fragment() {
                     if (orderState.value.widgetVisible) {
                         AndroidView(factory = { context ->
                             val serverUrls = viewModel.getServerUrls()
-                            bridgeView ?: TruvBridgeView(context).apply {
+                            bridgeView ?: TruvOrderView(context).apply {
                                 setConfig(
                                     TruvBridgeViewConfig(
                                         apiUrl = serverUrls.apiUrl,
@@ -70,7 +70,7 @@ class OrderFragment : Fragment() {
                                         orderUrl = serverUrls.orderUrl,
                                     )
                                 )
-                                addOrderEventListener(viewModel.truvOrderEventListener)
+                                addEventListener(viewModel.truvOrderEventListener)
                                 bridgeView = this
                                 loadOrderUrl(orderState.value.token)
                             }
