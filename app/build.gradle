@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
 }
 
-
 def truvSdkVersion = '1.13.0-rc.1'
 
 android {
