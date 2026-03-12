@@ -2,7 +2,6 @@ package com.truv
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -134,11 +133,6 @@ class ProductFragment : Fragment() {
                 }
             }
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        bridgeView?.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
