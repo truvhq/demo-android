@@ -90,20 +90,20 @@ class MainViewModel : ViewModel() {
     val truvBridgeEventListener = object : TruvEventsListener {
 
         override fun onSuccess(payload: TruvSuccessPayload) {
-            log("onSuccess callback invoked")
+            log("bridge: onSuccess callback invoked")
         }
 
         override fun onEvent(event: TruvEventPayload) {
-            log("onEvent callback invoked: ${event.eventType} ($event)")
+            log("bridge: onEvent callback invoked: ${event.eventType} ($event)")
         }
 
         override fun onClose() {
-            log("onClose callback invoked")
+            log("bridge: onClose callback invoked")
             hideWidget()
         }
 
         override fun onLoad() {
-            log("onLoad callback invoked")
+            log("bridge: onLoad callback invoked")
         }
 
     }
@@ -123,14 +123,14 @@ class MainViewModel : ViewModel() {
 
     val truvOrderEventListener = object : TruvOrderEventsListener {
         override fun onOrderEvent(event: TruvOrderEvent) {
-            log("order onEvent: $event")
+            log("order onOrderEvent: $event")
             if (event is TruvOrderEvent.Close) {
                 hideOrderWidget()
             }
         }
 
         override fun onBridgeEvent(event: TruvEventPayload) {
-            log("bridge onEvent: $event")
+            log("order onBridgeEvent: $event")
         }
     }
 
