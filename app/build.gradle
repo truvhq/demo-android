@@ -3,7 +3,7 @@ plugins {
     id 'kotlin-android'
 }
 
-def truvSdkVersion = '1.13.0'
+def truvSdkVersion = '1.13.1'
 
 android {
     signingConfigs {
