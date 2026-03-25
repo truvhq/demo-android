@@ -1,7 +1,6 @@
 package com.truv
 
 import android.content.Context
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -37,6 +36,7 @@ class MainActivity : AppCompatActivity() {
         pager.adapter = adapter
 
         tabLayout.addTab(tabLayout.newTab().setText("Product").setIcon(R.drawable.ic_product))
+        tabLayout.addTab(tabLayout.newTab().setText("Order").setIcon(R.drawable.ic_order))
         tabLayout.addTab(tabLayout.newTab().setText("Console").setIcon(R.drawable.ic_console))
         tabLayout.addTab(tabLayout.newTab().setText("Settings").setIcon(R.drawable.ic_settings))
 
@@ -60,10 +60,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        supportFragmentManager.fragments.forEach {
-            it.onActivityResult(requestCode, resultCode, data)
-        }
-    }
 }
