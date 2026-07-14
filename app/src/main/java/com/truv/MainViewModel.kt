@@ -8,7 +8,9 @@ import com.google.gson.annotations.SerializedName
 import com.truv.models.TruvEventPayload
 import com.truv.models.TruvSuccessPayload
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.truv.api.TruvApiClient
 import com.truv.models.TruvOrderEvent
@@ -33,6 +35,7 @@ data class BridgeTokenRequest(
 ) {}
 
 sealed class BridgeTokenState() {
+    object BridgeTokenIdle : BridgeTokenState()
     object BridgeTokenLoading : BridgeTokenState()
     data class BridgeTokenLoaded(val bridgeToken: String) : BridgeTokenState()
     object BridgeTokenError : BridgeTokenState()
@@ -71,7 +74,6 @@ data class ServerUrls(
 @ExperimentalCoroutinesApi
 class MainViewModel : ViewModel() {
     private lateinit var preferences: SharedPreferences
-    private lateinit var apiClient: TruvApiClient;
 
     private val _activeTabState = MutableStateFlow<Int>(0)
     val activeTabState: StateFlow<Int> = _activeTabState
@@ -81,8 +83,11 @@ class MainViewModel : ViewModel() {
     }
 
     private val _bridgeTokenState =
-        MutableStateFlow<BridgeTokenState>(BridgeTokenState.BridgeTokenLoading)
+        MutableStateFlow<BridgeTokenState>(BridgeTokenState.BridgeTokenIdle)
     val bridgeTokenState: StateFlow<BridgeTokenState> = _bridgeTokenState
+
+    private val _bridgeErrorEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val bridgeErrorEvents: SharedFlow<Unit> = _bridgeErrorEvents
 
     private val _productUIState = MutableStateFlow(ProductUIState())
     val productUIState: StateFlow<ProductUIState> = _productUIState
@@ -136,8 +141,6 @@ class MainViewModel : ViewModel() {
 
     fun changeProduct(productType: String) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(productType = productType)
-
-        fetchBridgeToken()
     }
 
     fun showWidget() = viewModelScope.launch {
@@ -152,20 +155,14 @@ class MainViewModel : ViewModel() {
 
     fun changeCompanyMapping(mapping: String?) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(companyMapping = mapping)
-
-        fetchBridgeToken()
     }
 
     fun changeProvider(provider: String?) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(provider = provider)
-
-        fetchBridgeToken()
     }
 
     fun changeAccountState(accountState: AccountState) = viewModelScope.launch {
         _productUIState.value = productUIState.value.copy(accountState = accountState)
-
-        fetchBridgeToken()
     }
 
     private val _consoleState = MutableStateFlow<String>("")
@@ -184,7 +181,6 @@ class MainViewModel : ViewModel() {
         val developmentKey = preferences.getString("dev", "")
         val productionKey = preferences.getString("prod", "")
         val clientId = preferences.getString("client_id", "")
-        val userId = preferences.getString("user_id", "")
 
         _settingsUIState.value = settingsUIState.value.copy(
             server = server!!,
@@ -194,8 +190,6 @@ class MainViewModel : ViewModel() {
             prod = productionKey!!,
             clientId = clientId!!,
         )
-
-        fetchBridgeToken()
     }
 
     private val _settingsUIState = MutableStateFlow(SettingsUIState())
@@ -206,7 +200,6 @@ class MainViewModel : ViewModel() {
         val p = preferences.edit()
         p.putString("server", server)
         p.apply()
-        fetchBridgeToken()
     }
 
     fun changeEnv(env: String) = viewModelScope.launch {
@@ -214,7 +207,6 @@ class MainViewModel : ViewModel() {
         val p = preferences.edit()
         p.putString("env", env)
         p.apply()
-        fetchBridgeToken()
     }
 
     fun changeClientId(clientId: String) = viewModelScope.launch {
@@ -224,8 +216,6 @@ class MainViewModel : ViewModel() {
         p.apply()
 
         changeUserId("")
-
-        fetchBridgeTokenThrottle()
     }
 
     fun changeDevKey(devKey: String) = viewModelScope.launch {
@@ -233,8 +223,6 @@ class MainViewModel : ViewModel() {
         val p = preferences.edit()
         p.putString("dev", devKey)
         p.apply()
-
-        fetchBridgeTokenThrottle()
     }
 
     fun changeProdKey(prodKey: String) = viewModelScope.launch {
@@ -242,8 +230,6 @@ class MainViewModel : ViewModel() {
         val p = preferences.edit()
         p.putString("prod", prodKey)
         p.apply()
-
-        fetchBridgeTokenThrottle()
     }
 
     fun changeSandboxKey(sandboxKey: String) = viewModelScope.launch {
@@ -251,8 +237,6 @@ class MainViewModel : ViewModel() {
         val p = preferences.edit()
         p.putString("sandbox", sandboxKey)
         p.apply()
-
-        fetchBridgeTokenThrottle()
     }
 
     fun changeUserId(userId: String) = viewModelScope.launch {
@@ -261,14 +245,6 @@ class MainViewModel : ViewModel() {
         p.apply()
     }
 
-    private var bridgeTokenJob: Job? = null
-
-    private fun fetchBridgeTokenThrottle() {
-        bridgeTokenJob?.cancel()
-
-        fetchBridgeToken()
-    }
-    
     public fun getServerUrls(): ServerUrls {
         val server = settingsUIState.value.server
 
@@ -281,61 +257,68 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun fetchBridgeToken() {
-        Log.d("ViewModel", "execute fetchBridgeToken")
-
-        val env = settingsUIState.value.env
-        val clientId = settingsUIState.value.clientId
-        val sandboxKey = settingsUIState.value.sandbox
-        val devKey = settingsUIState.value.dev
-        val prodKey = settingsUIState.value.prod
-
-        val secret = when (env) {
-            "dev" -> devKey
-            "prod" -> prodKey
-            else -> sandboxKey
+    fun openBridge() {
+        val settings = settingsUIState.value
+        val secret = when (settings.env) {
+            "dev" -> settings.dev
+            "prod" -> settings.prod
+            else -> settings.sandbox
         }
 
-        val apiUrl = getServerUrls().apiUrl
-
-        if (secret == "") {
-            Log.d("ViewModel", "stop fetching bridgetToken, secret is empty")
+        if (secret.isEmpty()) {
+            Log.d("ViewModel", "can't open bridge, secret is empty")
+            showBridgeError()
             return
         }
 
-        apiClient = TruvApiClient(apiUrl, clientId, secret)
-
-        _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
+        val apiClient = TruvApiClient(getServerUrls().apiUrl, settings.clientId, secret, ::log)
         val state = productUIState.value
+        _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
 
-        bridgeTokenJob = viewModelScope.launch {
+        viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                apiClient.createUser({ userId ->
-                    changeUserId(userId)
-                    createBridgeToken(userId, state)
-                    log("User created with id: $userId")
-                }, {
-                    log("User creation error: $it")
-                })
+                val userId = preferences.getString("user_id", "")
+                if (userId.isNullOrEmpty()) {
+                    apiClient.createUser({ newUserId ->
+                        changeUserId(newUserId)
+                        log("User created with id: $newUserId")
+                        createBridgeToken(apiClient, newUserId, state)
+                    }, { statusCode, body ->
+                        log(requestErrorMessage("User creation", statusCode, body))
+                        _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
+                        showBridgeError()
+                    })
+                } else {
+                    createBridgeToken(apiClient, userId, state)
+                }
             }
-
-
         }
     }
 
-    private fun createBridgeToken(userId: String, state: ProductUIState) {
+    private fun createBridgeToken(apiClient: TruvApiClient, userId: String, state: ProductUIState) {
         apiClient.createBridgeToken(userId, BridgeTokenRequest(
-            productUIState.value.productType,
+            state.productType,
             state.companyMapping,
             state.provider,
-            if (state.productType === "deposit_switch" || state.productType === "pll") state.accountState else null
-        ), {
-            _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(it)
-            log("Fetched bridge token: $it")
-        }, {
-            log("Bridge token error: $it")
+            if (state.productType == "deposit_switch" || state.productType == "pll") state.accountState else null
+        ), { token ->
+            _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoaded(token)
+            log("Fetched bridge token: $token")
+            showWidget()
+        }, { statusCode, body ->
+            log(requestErrorMessage("Bridge token", statusCode, body))
             _bridgeTokenState.value = BridgeTokenState.BridgeTokenError
+            showBridgeError()
         })
+    }
+
+    private fun requestErrorMessage(action: String, statusCode: Int, body: String): String {
+        val status = if (statusCode > 0) " (HTTP $statusCode)" else ""
+        return "$action error$status: $body"
+    }
+
+    private fun showBridgeError() {
+        _bridgeErrorEvents.tryEmit(Unit)
     }
 
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.kittinunf.fuel.httpPost
 import com.truv.BridgeTokenState
 import com.github.kittinunf.fuel.*
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.await
 import com.github.kittinunf.fuel.core.requests.CancellableRequest
@@ -37,36 +38,35 @@ data class CreateUserResponse(
     }
 }
 
-class TruvApiClient {
-    private val baseUrl: String;
-    private val clientId: String;
-    private val clientSecret: String;
-
-    constructor(baseUrl: String, clientId: String, clientSecret: String) {
-        this.baseUrl = baseUrl;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-    };
+class TruvApiClient(
+    private val baseUrl: String,
+    private val clientId: String,
+    private val clientSecret: String,
+    private val log: (String) -> Unit,
+) {
 
     fun createUser(
-        onSuccess: (id: String) -> Unit, onFailure: (message: String?) -> Unit
+        onSuccess: (id: String) -> Unit, onFailure: (statusCode: Int, body: String) -> Unit
     ) = runBlocking {
         val gson = Gson()
-        "$baseUrl/v1/users/".httpPost().header(
+        val url = "$baseUrl/v1/users/"
+        val body = gson.toJson(mapOf(
+            "external_user_id" to "demo-app-${UUID.randomUUID()}",
+            "first_name" to "John",
+            "last_name" to "Doe",
+        ))
+        logRequestStart(url, body)
+        url.httpPost().header(
             mapOf(
                 "Content-Type" to "application/json",
                 "X-Access-Client-Id" to clientId,
                 "X-Access-Secret" to clientSecret
             )
-        ).body(gson.toJson(mapOf(
-            "external_user_id" to "demo-app-${UUID.randomUUID()}",
-            "first_name" to "John",
-            "last_name" to "Doe",
-        )))
+        ).body(body)
             .awaitObjectResult(CreateUserResponse.Deserializer())
             .fold(
                 { response -> onSuccess(response.id) },
-                { error -> onFailure(String(error.response.data)) },
+                { error -> onFailure(error.response.statusCode, errorBody(error)) },
             )
     }
 
@@ -74,19 +74,35 @@ class TruvApiClient {
         userId: String,
         request: BridgeTokenRequest,
         onSuccess: (token: String) -> Unit,
-        onFailure: (message: String?) -> Unit
+        onFailure: (statusCode: Int, body: String) -> Unit
     ) = runBlocking {
         val gson = Gson()
-        "$baseUrl/v1/users/$userId/tokens/".httpPost().header(
+        val url = "$baseUrl/v1/users/$userId/tokens/"
+        val body = gson.toJson(request)
+        logRequestStart(url, body)
+        url.httpPost().header(
             mapOf(
                 "Content-Type" to "application/json",
                 "X-Access-Client-Id" to clientId,
                 "X-Access-Secret" to clientSecret
             )
-        ).body(gson.toJson(request)).awaitObjectResult(BridgeTokenResponse.Deserializer()).fold(
+        ).body(body).awaitObjectResult(BridgeTokenResponse.Deserializer()).fold(
             { response -> onSuccess(response.bridgeToken) },
-            { error -> onFailure(error.response.data.toString(Charsets.UTF_8)) },
+            { error -> onFailure(error.response.statusCode, errorBody(error)) },
         )
 
+    }
+
+    private fun errorBody(error: FuelError): String =
+        if (error.response.data.isNotEmpty()) String(error.response.data) else error.message.orEmpty()
+
+    private fun logRequestStart(url: String, body: String) {
+        log("Starting request $url with clientId ${formatCredential(clientId)} and secret ${formatCredential(clientSecret)}, body: $body")
+    }
+
+    private fun formatCredential(value: String): String {
+        val dashIndex = value.indexOf('-')
+        val visible = if (dashIndex >= 0) value.take(dashIndex + 5) else value.take(4)
+        return "\"$visible***\""
     }
 }
