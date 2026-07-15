@@ -214,8 +214,6 @@ class MainViewModel : ViewModel() {
         val p = preferences.edit()
         p.putString("client_id", clientId)
         p.apply()
-
-        changeUserId("")
     }
 
     fun changeDevKey(devKey: String) = viewModelScope.launch {
@@ -239,9 +237,10 @@ class MainViewModel : ViewModel() {
         p.apply()
     }
 
-    fun changeUserId(userId: String) = viewModelScope.launch {
+    private fun saveUser(userId: String, contextKey: String) = viewModelScope.launch {
         val p = preferences.edit()
         p.putString("user_id", userId)
+        p.putString("user_context", contextKey)
         p.apply()
     }
 
@@ -258,12 +257,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun openBridge() {
-        val settings = settingsUIState.value
-        val secret = when (settings.env) {
-            "dev" -> settings.dev
-            "prod" -> settings.prod
-            else -> settings.sandbox
-        }
+        val secret = currentSecret()
 
         if (secret.isEmpty()) {
             Log.d("ViewModel", "can't open bridge, secret is empty")
@@ -271,16 +265,18 @@ class MainViewModel : ViewModel() {
             return
         }
 
-        val apiClient = TruvApiClient(getServerUrls().apiUrl, settings.clientId, secret, ::log)
+        val apiClient = TruvApiClient(getServerUrls().apiUrl, settingsUIState.value.clientId, secret, ::log)
         val state = productUIState.value
+        val contextKey = userContextKey()
         _bridgeTokenState.value = BridgeTokenState.BridgeTokenLoading
 
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
-                val userId = preferences.getString("user_id", "")
-                if (userId.isNullOrEmpty()) {
+                val storedUserId = preferences.getString("user_id", "")
+                val storedContext = preferences.getString("user_context", "")
+                if (storedUserId.isNullOrEmpty() || storedContext != contextKey) {
                     apiClient.createUser({ newUserId ->
-                        changeUserId(newUserId)
+                        saveUser(newUserId, contextKey)
                         log("User created with id: $newUserId")
                         createBridgeToken(apiClient, newUserId, state)
                     }, { statusCode, body ->
@@ -289,11 +285,23 @@ class MainViewModel : ViewModel() {
                         showBridgeError()
                     })
                 } else {
-                    createBridgeToken(apiClient, userId, state)
+                    createBridgeToken(apiClient, storedUserId, state)
                 }
             }
         }
     }
+
+    private fun currentSecret(): String {
+        val settings = settingsUIState.value
+        return when (settings.env) {
+            "dev" -> settings.dev
+            "prod" -> settings.prod
+            else -> settings.sandbox
+        }
+    }
+
+    private fun userContextKey(): String =
+        "${getServerUrls().apiUrl}|${settingsUIState.value.clientId}|${currentSecret()}"
 
     private fun createBridgeToken(apiClient: TruvApiClient, userId: String, state: ProductUIState) {
         apiClient.createBridgeToken(userId, BridgeTokenRequest(
