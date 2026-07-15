@@ -1,7 +1,6 @@
 package com.truv
 
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.annotations.SerializedName
@@ -267,7 +266,7 @@ class MainViewModel : ViewModel() {
         val secret = currentSecret()
 
         if (secret.isEmpty()) {
-            Log.d("ViewModel", "can't open bridge, secret is empty")
+            log("Can't open Truv Bridge: access key is empty")
             showBridgeError()
             return
         }
