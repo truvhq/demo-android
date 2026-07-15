@@ -244,6 +244,13 @@ class MainViewModel : ViewModel() {
         p.apply()
     }
 
+    private fun clearUser() = viewModelScope.launch {
+        val p = preferences.edit()
+        p.remove("user_id")
+        p.remove("user_context")
+        p.apply()
+    }
+
     public fun getServerUrls(): ServerUrls {
         val server = settingsUIState.value.server
 
@@ -274,6 +281,9 @@ class MainViewModel : ViewModel() {
             withContext(Dispatchers.Default) {
                 val storedUserId = preferences.getString("user_id", "")
                 val storedContext = preferences.getString("user_context", "")
+                if (!storedUserId.isNullOrEmpty() && storedContext != contextKey) {
+                    clearUser()
+                }
                 if (storedUserId.isNullOrEmpty() || storedContext != contextKey) {
                     apiClient.createUser({ newUserId ->
                         saveUser(newUserId, contextKey)
