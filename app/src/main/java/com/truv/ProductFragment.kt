@@ -44,9 +44,9 @@ class ProductFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         val alert = AlertDialog.Builder(context)
         alert.setTitle("Can’t open Truv Bridge")
-        alert.setMessage("Add a key or change the environment in the settings to run Truv Bridge.")
-        alert.setNeutralButton("Open settings") { _, _ ->
-            viewModel.setTab(Tabs.SETTINGS)
+        alert.setMessage("Check the logs to see what went wrong and change the keys in the settings if needed")
+        alert.setNeutralButton("Open logs") { _, _ ->
+            viewModel.setTab(Tabs.CONSOLE)
         }
 
         lifecycleScope.launchWhenStarted {
@@ -54,6 +54,12 @@ class ProductFragment : Fragment() {
                 if (!it.widgetVisible) {
                     bridgeView = null
                 }
+            }
+        }
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.bridgeErrorEvents.collect {
+                alert.show()
             }
         }
 
@@ -118,7 +124,8 @@ class ProductFragment : Fragment() {
                                 AdditionalSettings(viewModel = viewModel)
                             }
                             Button(
-                                onClick = { if (bridgeTokenState.value is BridgeTokenState.BridgeTokenLoaded) viewModel.showWidget() else alert.show() },
+                                onClick = { viewModel.openBridge() },
+                                enabled = bridgeTokenState.value !is BridgeTokenState.BridgeTokenLoading,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp)
