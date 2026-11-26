@@ -1,15 +1,23 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Gradle / build
+.gradle/
+build/
+.kotlin/
+.externalNativeBuild/
+.cxx/
+captures/
 local.properties
+
+# IDE: ignore everything except the shared code style
+.idea/*
+!.idea/codeStyles/
+*.iml
+
+# Build artifacts and signing keys
+*.apk
+*.aab
+*.jks
+*.keystore
+*.hprof
+
+# macOS
+.DS_Store
